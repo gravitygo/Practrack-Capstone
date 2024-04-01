@@ -1,0 +1,85 @@
+<app-main-template>
+  <div class="flex w-full justify-between">
+    <h1 class="text-3xl">Job Matching Details</h1>
+  </div>
+  <hr class="mb-2 mt-2 h-[2px] w-full bg-neutral-300" />
+  <h3 class="mb-4 text-xl font-semibold">
+    Multi-Factor Evaluation Process (MFEP) Results for {{ student.firstName }}
+    {{ student.lastName }}
+  </h3>
+  <div class="relative w-[60%] overflow-x-auto shadow-md sm:rounded-lg">
+    <table
+      class="w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+    >
+      <thead
+        class="text-md bg-neutral-100 text-center text-neutral-800 dark:bg-gray-700 dark:text-gray-400"
+      >
+        <tr>
+          <th scope="col" class="px-6 py-3">Company</th>
+          <th scope="col" class="px-6 py-3">MFEP Result</th>
+          <th scope="col" class="px-6 py-3">Recommendation Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let company of companies"
+          class="border-b bg-white text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+        >
+          <th
+            scope="row"
+            class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+          >
+            {{ company[0] }}
+          </th>
+          <td>{{ company[1][1].toFixed(4) }}</td>
+          <td>{{ ((company[1][1] / 4) * 100).toFixed(2) }}%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <hr class="mb-2 mt-2 h-[2px] w-full bg-neutral-300" />
+  <h3 class="mb-4 text-xl font-semibold">
+    Complete Normalized Table of MFEP Results
+  </h3>
+  <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <table
+      class="w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+    >
+      <thead
+        class="text-md bg-neutral-100 text-center text-neutral-800 dark:bg-gray-700 dark:text-gray-400"
+      >
+        <tr>
+          <th scope="col" class="px-4 py-3">Company</th>
+          <th scope="col" class="px-4 py-3">Relevance</th>
+          <th scope="col" class="px-4 py-3">Scope of Work</th>
+          <th scope="col" class="px-4 py-3">Career Development</th>
+          <th scope="col" class="px-4 py-3">Location</th>
+          <th scope="col" class="px-4 py-3">Setup</th>
+          <th scope="col" class="px-4 py-3">Nature of Company</th>
+          <th scope="col" class="bg-emerald-200 px-6 py-3">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let company of companies"
+          class="border-b bg-white text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+        >
+          <th
+            scope="row"
+            class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+          >
+            {{ company[0] }}
+          </th>
+          <td>{{ company[1][0][0][0].toFixed(4) }}</td>
+          <td>{{ company[1][0][0][1].toFixed(4) }}</td>
+          <td>{{ company[1][0][0][2].toFixed(4) }}</td>
+          <td>{{ company[1].locScore }}</td>
+          <td>{{ company[1].setupScore }}</td>
+          <td>{{ company[1].fieldScore }}</td>
+          <td class="bg-emerald-100">{{ company[1][1].toFixed(4) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</app-main-template>
+<app-loading></app-loading>

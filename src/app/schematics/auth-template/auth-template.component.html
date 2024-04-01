@@ -1,0 +1,24 @@
+<div class="flex h-screen w-full">
+  <div
+    class="flex max-w-[50vw] grow flex-col bg-neutral-200 bg-cover bg-center px-20 py-8"
+    style="background-image: url('../assets/hero_image.svg')"
+  >
+    <div class="flex flex-row gap-[10px]">
+      <img src="../../assets/short-logo.svg" class="10px w-8" />
+      <h1
+        class="flex font-logo text-3xl font-semibold text-lime-600 dark:text-lime-700"
+      >
+        practrack
+      </h1>
+    </div>
+    <div
+      class="my-32 text-right font-logo text-[5rem] font-semibold text-lime-600 dark:text-lime-700"
+    >
+      <h1 class="leading-hero">Always stay</h1>
+      <h1 class="leading-hero">On Track.</h1>
+    </div>
+  </div>
+  <div class="flex grow justify-center">
+    <ng-content></ng-content>
+  </div>
+</div>

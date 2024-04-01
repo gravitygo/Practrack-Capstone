@@ -1,0 +1,150 @@
+<div class="flex flex-col gap-6">
+  <div class="relative shadow-md sm:rounded-lg">
+    <table
+      class="max-h-[80%] w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+    >
+      <thead
+        class="text-md bg-neutral-100 text-center text-neutral-800 dark:bg-gray-700 dark:text-gray-400"
+      >
+        <tr>
+          <th scope="col" class="px-2 py-3">Name</th>
+          <th scope="col" class="px-2 py-3">Batch</th>
+          <th scope="col" class="px-2 py-3">Start Date</th>
+          <th scope="col" class="px-2 py-3">End Date</th>
+          <th scope="col" class="px-2 py-3">Company Deployment</th>
+          <th scope="col" class="px-2 py-3">Deployment Stage</th>
+          <th scope="col" class="px-2 py-3">To Check</th>
+          <th scope="col" class="px-2 py-3">Edit</th>
+          <th scope="col" class="px-2 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          class="border-b bg-white text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+          *ngFor="let rows of students; index as i"
+        >
+          <th
+            scope="row"
+            class="whitespace-nowrap px-2 py-4 font-medium text-gray-900 dark:text-white"
+          >
+            {{ rows.fullName }}
+          </th>
+          <td class="px-2 py-4">{{ rows.acadTerm }}</td>
+          <td class="px-2 py-4">{{ rows.formattedStartDate || '-' }}</td>
+          <td class="px-2 py-4">{{ rows.formattedEndDate || '-' }}</td>
+          <td class="px-2 py-4">{{ rows.companyName || '-' }}</td>
+          <td class="px-2 py-4">{{ rows.ojtPhase }}</td>
+          <td
+            class="px-2 py-4"
+            *ngIf="rows.unchecked > 0"
+            [ngClass]="{ 'green-background': rows.unchecked > 0 }"
+          >
+            {{ rows.unchecked }}
+          </td>
+          <td class="px-2 py-4" *ngIf="rows.unchecked == 0">
+            {{ rows.unchecked }}
+          </td>
+          <td class="px-2 py-4">
+            <button
+              class="inline-flex items-center rounded-lg p-2 text-center text-sm font-medium dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+              type="button"
+              (click)="toggleModal(1, undefined, rows.createdBy)"
+            >
+              <ng-icon
+                name="matEditOutline"
+                size="24px"
+                class="mr-0 text-gray-500 hover:text-gray-900"
+              ></ng-icon>
+            </button>
+          </td>
+          <td class="flex items-center justify-center px-6 py-4">
+            <button
+              class="px-2 py-1"
+              type="button"
+              [routerLink]="rows.createdBy"
+            >
+              <ng-icon
+                name="matFolderOutline"
+                size="24px"
+                class="mr-0 text-gray-500 hover:text-gray-900"
+              ></ng-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<app-modal
+  *ngIf="idNum === 1"
+  [isOpen]="isModalOpen"
+  [hasHeader]="true"
+  headerName="Edit Student Details"
+  (eventToggleModal)="toggleModal(1, $event)"
+>
+  <form
+    class="flex flex-col gap-6"
+    [formGroup]="detailsForm"
+    (submit)="saveStudentDetails(studentUserID)"
+  >
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">Start Date</h4>
+      <mat-form-field
+        class="border-[1px]rounded-md w-50% h-50 rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+      >
+        <mat-label>Choose a date</mat-label>
+        <input
+          matInput
+          [matDatepicker]="picker"
+          formControlName="addStartDate"
+        />
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">End Date</h4>
+      <mat-form-field
+        class="border-[1px]rounded-md w-50% h-50 rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+      >
+        <mat-label>Choose a date</mat-label>
+        <input
+          matInput
+          [matDatepicker]="picker1"
+          formControlName="addEndDate"
+        />
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="picker1"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #picker1></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">Company Deployment</h4>
+      <select
+        id="addCompany"
+        class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+        formControlName="addCompany"
+      >
+        <option value="" disabled selected>Select company</option>
+        <option *ngFor="let company of companies" [ngValue]="company.companyID">
+          {{ company.companyName }}
+        </option>
+      </select>
+    </div>
+
+    <hr />
+
+    <button
+      class="w-full rounded bg-lime-600 px-6 py-3 text-center text-white hover:bg-lime-700"
+      type="submit"
+    >
+      Save
+    </button>
+  </form>
+</app-modal>

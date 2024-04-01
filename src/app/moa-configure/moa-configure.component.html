@@ -1,0 +1,400 @@
+<app-main-template>
+  <div class="flex w-full justify-between">
+    <h1 class="text-3xl">MOA DSS Configuration</h1>
+  </div>
+  <hr class="mb-4 mt-2 h-[2px] w-full bg-neutral-300" />
+  <div
+    class="h-full bg-neutral-100 p-4 text-neutral-800 shadow-md dark:bg-gray-700 dark:text-gray-400 sm:rounded-lg"
+  >
+    <div class="w-full">
+      <h2 class="text-2xl">Pairwise Comparisons</h2>
+      <p class="text-sm">
+        Please set your preference between all of the criteria listed below.
+        (e.g. Relevance is twice more important than the Scope of Work)
+      </p>
+      <hr class="mb-6 mt-1 h-[2px] w-full bg-neutral-300" />
+    </div>
+    <form (submit)="saveConfiguration()">
+      <div class="flex gap-4">
+        <div class="flex w-[70%] flex-col">
+          <div
+            class="mb-4 w-full grow rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 text-sm dark:border-neutral-600"
+          >
+            <div class="relative flex w-full flex-row text-center">
+              <div class="ml-2 flex-none">
+                <p class="text-xl font-semibold text-lime-600">A</p>
+              </div>
+              <div class="flex-grow p-3">
+                <h2 class="border-s-2 px-3 text-lg font-medium" dir="rtl">
+                  Relevance
+                </h2>
+              </div>
+              <div class="flex-none">
+                <p class="text-xl font-semibold text-lime-600">B</p>
+              </div>
+              <div class="flex-grow p-3">
+                <h2 class="px-3 text-lg font-medium">Scope of Work</h2>
+              </div>
+            </div>
+
+            <hr class="mb-4 mt-2 h-[2px] w-full bg-neutral-300" />
+            <div class="wrap my-12 ml-4">
+              <ul class="likert">
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q1"
+                    value="a9b"
+                    (change)="q1 = 'a9b'"
+                  />
+                  <label>A > B (9x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q1"
+                    value="a7b"
+                    (change)="q1 = 'a7b'"
+                  />
+                  <label>A > B (7x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q1"
+                    value="a5b"
+                    (change)="q1 = 'a5b'"
+                  />
+                  <label>A > B (5x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q1"
+                    value="a3b"
+                    (change)="q1 = 'a3b'"
+                  />
+                  <label>A > B (3x)</label>
+                </li>
+                <li class="likertli">
+                  <input type="radio" name="q1" value="e" (change)="q1 = 'e'" />
+                  <label class="font-bold">A = B</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q1"
+                    value="b3a"
+                    (change)="q1 = 'b3a'"
+                  />
+                  <label>B > A (3x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q1"
+                    value="b5a"
+                    (change)="q1 = 'b5a'"
+                  />
+                  <label>B > A (5x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q1"
+                    value="b7a"
+                    (change)="q1 = 'b7a'"
+                  />
+                  <label>B > A (7x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q1"
+                    value="b9a"
+                    (change)="q1 = 'b9a'"
+                  />
+                  <label>B > A (9x)</label>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div
+            class="mb-4 w-full grow rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 text-sm dark:border-neutral-600"
+          >
+            <div class="relative flex w-full flex-row text-center">
+              <div class="ml-2 flex-none">
+                <p class="text-xl font-semibold text-lime-600">A</p>
+              </div>
+              <div class="flex-grow p-3">
+                <h2 class="border-s-2 px-3 text-lg font-medium" dir="rtl">
+                  Relevance
+                </h2>
+              </div>
+              <div class="flex-none">
+                <p class="text-xl font-semibold text-lime-600">B</p>
+              </div>
+              <div class="flex-grow p-3">
+                <h2 class="px-3 text-lg font-medium">Career Development</h2>
+              </div>
+            </div>
+            <hr class="mb-4 mt-2 h-[2px] w-full bg-neutral-300" />
+            <div class="wrap my-12 ml-4">
+              <ul class="likert">
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q2"
+                    value="a9b"
+                    (change)="q2 = 'a9b'"
+                  />
+                  <label>A > B (9x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q2"
+                    value="a7b"
+                    (change)="q2 = 'a7b'"
+                  />
+                  <label>A > B (7x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q2"
+                    value="a5b"
+                    (change)="q2 = 'a5b'"
+                  />
+                  <label>A > B (5x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q2"
+                    value="a3b"
+                    (change)="q2 = 'a3b'"
+                  />
+                  <label>A > B (3x)</label>
+                </li>
+                <li class="likertli">
+                  <input type="radio" name="q2" value="e" (change)="q2 = 'e'" />
+                  <label class="font-bold">A = B</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q2"
+                    value="b3a"
+                    (change)="q2 = 'b3a'"
+                  />
+                  <label>B > A (3x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q2"
+                    value="b5a"
+                    (change)="q2 = 'b5a'"
+                  />
+                  <label>B > A (5x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q2"
+                    value="b7a"
+                    (change)="q2 = 'b7a'"
+                  />
+                  <label>B > A (7x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q2"
+                    value="b9a"
+                    (change)="q2 = 'b9a'"
+                  />
+                  <label>B > A (9x)</label>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div
+            class="mb-4 w-full grow rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 text-sm dark:border-neutral-600"
+          >
+            <div class="relative flex w-full flex-row text-center">
+              <div class="ml-2 flex-none">
+                <p class="text-xl font-semibold text-lime-600">A</p>
+              </div>
+              <div class="flex-grow p-3">
+                <h2 class="border-s-2 px-3 text-lg font-medium" dir="rtl">
+                  Scope of Work
+                </h2>
+              </div>
+              <div class="flex-none">
+                <p class="text-xl font-semibold text-lime-600">B</p>
+              </div>
+              <div class="flex-grow p-3">
+                <h2 class="px-3 text-lg font-medium">Career Development</h2>
+              </div>
+            </div>
+            <hr class="mb-4 mt-2 h-[2px] w-full bg-neutral-300" />
+            <div class="wrap my-12 ml-4">
+              <ul class="likert">
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q3"
+                    value="a9b"
+                    (change)="q3 = 'a9b'"
+                  />
+                  <label>A > B (9x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q3"
+                    value="a7b"
+                    (change)="q3 = 'a7b'"
+                  />
+                  <label>A > B (7x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q3"
+                    value="a5b"
+                    (change)="q3 = 'a5b'"
+                  />
+                  <label>A > B (5x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q3"
+                    value="a3b"
+                    (change)="q3 = 'a3b'"
+                  />
+                  <label>A > B (3x)</label>
+                </li>
+                <li class="likertli">
+                  <input type="radio" name="q3" value="e" (change)="q3 = 'e'" />
+                  <label class="font-bold">A = B</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q3"
+                    value="b3a"
+                    (change)="q3 = 'b3a'"
+                  />
+                  <label>B > A (3x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q3"
+                    value="b5a"
+                    (change)="q3 = 'b5a'"
+                  />
+                  <label>B > A (5x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q3"
+                    value="b7a"
+                    (change)="q3 = 'b7a'"
+                  />
+                  <label>B > A (7x)</label>
+                </li>
+                <li class="likertli">
+                  <input
+                    type="radio"
+                    name="q3"
+                    value="b9a"
+                    (change)="q3 = 'b9a'"
+                  />
+                  <label>B > A (9x)</label>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="flex items-center justify-center">
+            <button
+              class="flex items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+              type="submit"
+            >
+              <p class="text-xs font-medium text-white">Save Configuration</p>
+              <ng-icon
+                name="matSettingsOutline"
+                size="16px"
+                class="mr-0 text-white"
+              ></ng-icon>
+            </button>
+          </div>
+        </div>
+        <div
+          class="w-[30%] grow rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+        >
+          <h2 class="mt-4 text-center text-base font-medium">
+            Legend / Definition of Terms
+          </h2>
+          <hr class="mb-2 mt-4 h-[2px] w-full bg-neutral-300" />
+          <div class="ml-4 flex-col p-4 text-justify">
+            <div class="mb-2 text-lg font-semibold">
+              <span class="text-lg font-semibold">&#x2022; A &gt; B (</span>
+              <span class="italic">n</span>
+              <span>x)</span>
+              <p class="ml-6 text-base font-normal">
+                Criteria A is <span class="italic">n</span> times more important
+                than criteria B.
+              </p>
+            </div>
+            <div class="mb-2 text-lg font-semibold">
+              <span class="text-lg font-semibold">&#x2022; A &lt; B (</span>
+              <span class="italic">n</span>
+              <span>x)</span>
+              <p class="ml-6 text-base font-normal">
+                Criteria B is <span class="italic">n</span> times more important
+                than criteria A.
+              </p>
+            </div>
+            <div class="mb-2 text-lg font-semibold">
+              <span class="text-lg font-semibold">&#x2022; A &equals; B (</span>
+              <span class="italic">n</span>
+              <span>x)</span>
+              <p class="ml-6 text-base font-normal">
+                Criteria A is <span class="italic">equally</span> important as
+                criteria B.
+              </p>
+            </div>
+            <hr class="mb-8 mt-8 h-[2px] w-full bg-neutral-300" />
+            <h2 class="font-medium text-lime-600">RELEVANCE</h2>
+            <p class="mb-6 ml-6">
+              Relevance assesses how well the Practicum Program aligns with
+              students' career goals and industry needs, ensuring practical
+              applicability and bridging the gap between theory and practice.
+            </p>
+            <h2 class="font-medium text-lime-600">SCOPE OF WORK</h2>
+            <p class="mb-6 ml-6">
+              The scope of work encompasses the range and depth of tasks and
+              responsibilities undertaken during the Practicum Program,
+              providing students with hands-on experience and opportunities to
+              apply theoretical knowledge.
+            </p>
+            <h2 class="font-medium text-lime-600">CAREER DEVELOPMENT</h2>
+            <p class="mb-6 ml-6">
+              Career development within the Practicum Program involves acquiring
+              skills, knowledge, and experiences relevant to students' chosen
+              career paths, fostering professional growth, and facilitating
+              connections with potential employers for future success.
+            </p>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</app-main-template>
+<app-loading></app-loading>

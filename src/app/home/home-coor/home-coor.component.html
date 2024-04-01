@@ -1,0 +1,118 @@
+<!-- WARNING: <1 COORDINATOR -->
+<div
+  class="w-full rounded-lg border border-gray-200 bg-red-100 p-4 shadow"
+  *ngIf="toggleTurnover"
+>
+  <div class="flex">
+    <ng-icon
+      name="matWarningAmberRound"
+      size="2.25rem"
+      class="text-red-600"
+    ></ng-icon>
+    <p class="ml-2 text-sm font-medium text-red-900">
+      There is currently more than one active coordinator account. If you are
+      not the current coordinator, please
+      <a
+        [routerLink]="'/account/' + userLogged.currentUser!.uid!"
+        class="text-sm font-medium text-red-600 hover:text-red-500 hover:underline"
+        >deactivate</a
+      >
+      to complete coordinator turnover.
+    </p>
+  </div>
+</div>
+
+<div class="mt-4 flex w-full gap-4">
+  <div
+    class="block w-1/3 rounded-lg border border-gray-200 bg-white p-4 shadow"
+  >
+    <h3 class="text-xl font-semibold">Current Practicum Term</h3>
+    <h4 class="text-sm font-medium text-neutral-400">{{ termString }}</h4>
+    <hr class="mb-4 h-[1px] w-full bg-neutral-300" />
+    <app-home-donut [data]="data"></app-home-donut>
+  </div>
+  <div class="flex w-1/3 flex-col gap-4">
+    <div
+      class="block w-full rounded-lg border border-gray-200 bg-white p-4 shadow"
+    >
+      <h3 class="text-xl font-semibold">Unchecked Submissions</h3>
+      <hr class="mb-4 h-[1px] w-full bg-neutral-300" />
+      <h1 class="pb-3.5 text-center text-5xl font-bold">{{ values[0] }}</h1>
+      <div style="float: inline-end">
+        <button
+          class="flex items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+          type="button"
+          routerLink="/documentHub/coordinator"
+        >
+          <p class="text-xs font-medium text-white">View Submissions</p>
+          <ng-icon
+            name="matChevronRightOutline"
+            size="24px"
+            class="mr-0 text-white"
+          ></ng-icon>
+        </button>
+      </div>
+    </div>
+    <div
+      class="block w-full rounded-lg border border-gray-200 bg-white p-4 shadow"
+    >
+      <h3 class="text-xl font-semibold">Unread Messages</h3>
+      <hr class="mb-4 h-[1px] w-full bg-neutral-300" />
+      <h1 class="pb-3.5 text-center text-5xl font-bold">{{ values[1] }}</h1>
+      <div style="float: inline-end">
+        <button
+          class="flex items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+          type="button"
+          routerLink="/inbox"
+        >
+          <p class="text-xs font-medium text-white">Open Inbox</p>
+          <ng-icon
+            name="matChevronRightOutline"
+            size="24px"
+            class="mr-0 text-white"
+          ></ng-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div
+    class="block w-full rounded-lg border border-gray-200 bg-white p-4 shadow"
+  >
+    <h3 class="text-xl font-semibold">Ongoing Deployment</h3>
+    <hr class="h-[1px] w-full bg-neutral-300" />
+    <table
+      class="w-full table-fixed text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+    >
+      <thead
+        class="text-md border-b bg-white text-center text-neutral-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+      >
+        <tr>
+          <th scope="col" class="text-l px-6 py-3">Student</th>
+          <th scope="col" class="text-l px-6 py-3">Degree Code</th>
+          <th scope="col" class="text-l px-6 py-3">Missing Reports</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          class="border-b bg-white text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+          *ngFor="let index of getVisibleIndices()"
+        >
+          <td class="px-6 py-2">
+            <b>{{ rows[index].lastName }},</b>
+            {{ rows[index].firstName }}
+          </td>
+          <td class="px-6 py-2">{{ rows[index].degreeCode }}</td>
+          <td class="px-6 py-2">{{ rows[index].missing_docs }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <mat-paginator
+      [length]="rows.length"
+      [pageSize]="4"
+      [pageSizeOptions]="[4, 12, 20]"
+      (page)="paginator.pageIndex = $event.pageIndex"
+    >
+    </mat-paginator>
+  </div>
+</div>
+<app-loading></app-loading>

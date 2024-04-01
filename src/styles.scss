@@ -1,0 +1,29 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@font-face {
+  font-family: 'Logo-Font';
+  src: url('./assets/fonts/BalooDa2.ttf');
+}
+@import 'tailwindcss/utilities';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+.xng-breadcrumb-item,
+.xng-breadcrumb-separator {
+  @apply text-neutral-500;
+}
+
+.xng-breadcrumb-item:last-child {
+  @apply text-neutral-950;
+}
+
+//Colors
+//--Button/active
+$primary: #4d7c0f;
+
+//--Content
+$content-border: #d4d4d4;
+$content-text: #262626;
+$content-subtext: #737373;
+
+//Font
+$inter: 'Inter', serif;

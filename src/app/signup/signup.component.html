@@ -1,0 +1,237 @@
+<app-auth-template>
+  <div class="flex shrink flex-col gap-16 px-40 py-8">
+    <div class="flex items-center justify-end gap-2">
+      <p class="text-emerald-600 dark:text-emerald-500">
+        Already have an account?
+      </p>
+      <a routerLink="/login">
+        <button
+          class="group flex items-center justify-center gap-3 rounded border border-emerald-600 px-3 py-2 hover:bg-emerald-600 dark:border-emerald-500 dark:hover:bg-emerald-500"
+          type="submit"
+        >
+          <ng-icon
+            name="matLogInOutline"
+            size="12px"
+            class="mr-0 text-emerald-600 group-hover:text-white dark:text-emerald-500"
+          ></ng-icon>
+          <p
+            class="text-xs font-medium text-emerald-600 group-hover:text-white dark:text-emerald-500"
+          >
+            Log in
+          </p>
+        </button>
+      </a>
+    </div>
+    <div>
+      <h1 class="text-4xl font-medium">Welcome To PracTrack!</h1>
+      <h2 class="text-xl font-thin text-neutral-600">
+        Register your account below.
+      </h2>
+    </div>
+    <form
+      class="flex flex-col gap-4"
+      [formGroup]="loginForm"
+      (submit)="onSubmit()"
+    >
+      <span
+        class="text-warning-500 text-base font-medium text-red-600 dark:text-red-500"
+        [ngStyle]="{
+          display: failed && submitted ? 'block' : 'none'
+        }"
+        >Failed to create an Account.</span
+      >
+      <div clas="input-group">
+        <h4 class="text-base font-medium text-neutral-600">First Name</h4>
+        <input
+          placeholder="First Name"
+          type="text"
+          formControlName="firstName"
+          class="w-[28.125rem] rounded border-[1px] border-neutral-500 px-3 py-2 text-xs dark:border-neutral-600"
+          [ngClass]="{
+            'border-red-600 dark:border-red-500':
+              submitted && loginForm.get('firstName')!.invalid,
+            'border-emerald-600 text-emerald-500 dark:border-emerald-600 dark:text-emerald-500':
+              loginForm.get('firstName')!.valid
+          }"
+        />
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              loginForm.get('firstName')!.invalid && submitted
+                ? 'block'
+                : 'none'
+          }"
+          >First Name should not be null.</span
+        >
+      </div>
+      <div clas="input-group">
+        <h4 class="text-base font-medium text-neutral-600">Last Name</h4>
+        <input
+          placeholder="Last Name"
+          type="text"
+          formControlName="lastName"
+          class="w-[28.125rem] rounded border-[1px] border-neutral-500 px-3 py-2 text-xs"
+          [ngClass]="{
+            'border-red-600 dark:border-red-500':
+              submitted && loginForm.get('lastName')!.invalid,
+            'border-emerald-600 text-emerald-500 dark:border-emerald-600 dark:text-emerald-500':
+              loginForm.get('lastName')!.valid
+          }"
+        />
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              loginForm.get('lastName')!.invalid && submitted ? 'block' : 'none'
+          }"
+          >Last Name should not be null.</span
+        >
+      </div>
+      <div clas="input-group">
+        <h4 class="text-base font-medium text-neutral-600">DLSU Email</h4>
+        <input
+          placeholder="DLSU Email"
+          type="text"
+          formControlName="dlsuEmail"
+          class="w-[28.125rem] rounded border-[1px] border-neutral-500 px-3 py-2 text-xs"
+          [ngClass]="{
+            'border-red-600 dark:border-red-500':
+              submitted && loginForm.get('dlsuEmail')!.invalid,
+            'border-emerald-600 text-emerald-500 dark:border-emerald-600 dark:text-emerald-500':
+              loginForm.get('dlsuEmail')!.valid
+          }"
+        />
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              loginForm.get('dlsuEmail')!.invalid && submitted
+                ? 'block'
+                : 'none'
+          }"
+          >Input a valid Email.</span
+        >
+      </div>
+      <div clas="input-group">
+        <h4 class="text-base font-medium text-neutral-600">ID number</h4>
+        <input
+          placeholder="ID Number"
+          type="number"
+          formControlName="idNumber"
+          class="w-[28.125rem] rounded border-[1px] border-neutral-500 px-3 py-2 text-xs"
+          [ngClass]="{
+            'border-red-600 dark:border-red-500':
+              submitted && loginForm.get('idNumber')!.invalid,
+            'border-emerald-600 text-emerald-500 dark:border-emerald-600 dark:text-emerald-500':
+              loginForm.get('idNumber')!.valid
+          }"
+        />
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              loginForm.get('idNumber')!.invalid && submitted ? 'block' : 'none'
+          }"
+          >Input a valid ID Number.</span
+        >
+      </div>
+      <div clas="input-group">
+        <h4 class="text-base font-medium text-neutral-600">Degree Program</h4>
+        <select
+          formControlName="degreeCode"
+          class="w-[28.125rem] rounded border-[1px] border-neutral-500 px-3 py-2 text-xs"
+          [ngClass]="{
+            'border-red-600 dark:border-red-500':
+              submitted && loginForm.get('degreeCode')!.invalid,
+            'border-emerald-600 text-emerald-500 dark:border-emerald-600 dark:text-emerald-500':
+              loginForm.get('degreeCode')!.valid
+          }"
+        >
+          <option value="" disabled>-- Select --</option>
+          <option *ngFor="let item of options" [value]="item.value">
+            {{ item.value }}
+          </option>
+        </select>
+
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              loginForm.get('degreeCode')!.invalid && submitted
+                ? 'block'
+                : 'none'
+          }"
+          >Please Select a course</span
+        >
+      </div>
+      <div clas="input-group">
+        <h4 class="text-base font-medium text-neutral-600">Password</h4>
+        <input
+          placeholder="Password"
+          type="password"
+          formControlName="password"
+          class="w-[28.125rem] rounded border-[1px] border-neutral-500 px-3 py-2 text-xs"
+          [ngClass]="{
+            'border-red-600 dark:border-red-500':
+              submitted && loginForm.get('password')!.invalid,
+            'border-emerald-600 text-emerald-500 dark:border-emerald-600 dark:text-emerald-500':
+              loginForm.get('password')!.valid
+          }"
+        />
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              loginForm.get('password')!.invalid && submitted ? 'block' : 'none'
+          }"
+          >Password should be 8 characters long.</span
+        >
+      </div>
+      <div clas="input-group">
+        <h4 class="text-base font-medium text-neutral-600">Confirm Password</h4>
+        <input
+          placeholder="Confirm Password"
+          type="password"
+          formControlName="confirmPassword"
+          class="w-[28.125rem] rounded border-[1px] border-neutral-500 px-3 py-2 text-xs"
+          [ngClass]="{
+            'border-red-600 dark:border-red-500':
+              loginForm.get('confirmPassword')!.touched &&
+              loginForm.get('confirmPassword')!.value !=
+                loginForm.get('password')!.value,
+            'border-emerald-600 text-emerald-500 dark:border-emerald-600 dark:text-emerald-500':
+              loginForm.get('confirmPassword')!.valid
+          }"
+        />
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              loginForm.get('confirmPassword')!.touched &&
+              loginForm.get('confirmPassword')!.value !=
+                loginForm.get('password')!.value
+                ? 'block'
+                : 'none'
+          }"
+          >Password doesn't match</span
+        >
+      </div>
+
+      <div class="submit-form">
+        <button
+          class="flex items-center justify-center gap-3 rounded bg-emerald-600 px-8 py-4 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
+          type="submit"
+        >
+          <ng-icon
+            name="matPersonAddAltOutline"
+            size="12px"
+            class="mr-0 text-white"
+          ></ng-icon>
+          <p class="text-xs font-medium text-white">Sign Up</p>
+        </button>
+      </div>
+    </form>
+  </div>
+</app-auth-template>
+<app-loading></app-loading>

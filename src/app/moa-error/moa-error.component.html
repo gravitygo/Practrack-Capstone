@@ -1,0 +1,39 @@
+<app-main-template>
+  <div class="flex w-full justify-between">
+    <h1 class="text-3xl">MOA DSS Configuration</h1>
+  </div>
+  <hr class="mb-4 mt-2 h-[2px] w-full bg-neutral-300" />
+  <div
+    class="h-[50%] w-[40%] bg-neutral-100 p-4 text-neutral-800 shadow-md dark:bg-gray-700 dark:text-gray-400 sm:rounded-lg"
+  >
+    <div class="w-full">
+      <h2 class="text-2xl">Preferences are not consistent.</h2>
+      <p class="text-sm">
+        Please retake your assessment to have an acceptable criteria preference.
+      </p>
+      <hr class="mb-6 mt-1 h-[2px] w-full bg-neutral-300" />
+      <div
+        class="mb-4 w-full grow rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 text-sm dark:border-neutral-600"
+      >
+        <div class="relative flex w-full flex-row justify-between px-8 py-4">
+          <h4 class="text-lg">Consistency Ratio</h4>
+          <h2 class="text-2xl font-semibold">
+            {{ consistencyRatio.toFixed(4) }}
+          </h2>
+        </div>
+        <p class="mb-6 px-8 italic text-lime-600">
+          Consistency ratio should be at least &lt; 0.1 to be deemed consistent.
+        </p>
+      </div>
+      <div class="flex justify-center">
+        <button
+          type="button"
+          class="mt-8 flex items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+          routerLink="../check"
+        >
+          <p class="font-medium text-white">Retake Configuration</p>
+        </button>
+      </div>
+    </div>
+  </div>
+</app-main-template>

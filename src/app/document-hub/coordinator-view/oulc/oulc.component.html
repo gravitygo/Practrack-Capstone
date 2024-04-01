@@ -1,0 +1,122 @@
+<div class="flex flex-col gap-6">
+  <div class="relative shadow-md sm:rounded-lg">
+    <table
+      class="max-h-[80%] w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+    >
+      <thead
+        class="text-md bg-neutral-100 text-center text-neutral-800 dark:bg-gray-700 dark:text-gray-400"
+      >
+        <tr>
+          <th scope="col" class="px-6 py-3">File Name</th>
+          <th scope="col" class="px-6 py-3">Student</th>
+          <th scope="col" class="px-6 py-3">Date Received</th>
+          <th scope="col" class="px-6 py-3">Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          class="cursor-pointer border-b bg-white text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+          *ngFor="let rows of oulc; index as i"
+          (click)="setCurrentDocument(rows.documentID); toggleModal(2)"
+        >
+          <th
+            scope="row"
+            class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+          >
+            {{ rows.documentName | trim: 20 }}
+          </th>
+          <td class="px-6 py-4">{{ rows.student | trim: 20 }}</td>
+          <td class="px-6 py-4">
+            {{ rows.dateReceived | date: 'MM/dd/yyyy' }}
+          </td>
+          <td class="px-6 py-4">
+            <!-- Dropdown -->
+            <div
+              class="inline-flex w-3/6 items-center gap-3 rounded-lg p-2 text-center text-sm font-medium text-white"
+              type="button"
+              [ngClass]="remarksColor[rows.remarks]"
+            >
+              <ng-icon
+                [name]="remarksIcon[rows.remarks]"
+                size="16px"
+                class="mr-0 text-white"
+              ></ng-icon>
+              {{ rows.remarks }}
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<app-modal
+  *ngIf="idNum === 2"
+  [isOpen]="isModalOpen"
+  [hasHeader]="true"
+  [headerName]="document.documentName"
+  (eventToggleModal)="toggleModal(2, $event)"
+>
+  <form class="flex flex-col gap-6">
+    <div class="flex items-center justify-between">
+      <h3>Status</h3>
+      <p>{{ document.statusValue }}</p>
+    </div>
+    <hr />
+    <div class="flex items-center justify-between">
+      <h3>Decided On</h3>
+      <p>{{ document.dateLastEdited ?? '--/--/--' }}</p>
+    </div>
+    <hr />
+    <h2>Additional Comments</h2>
+    <p class="text-sm">{{ document.feedback }}</p>
+    <button
+      class="rounded bg-lime-600 px-6 py-3 text-white hover:bg-lime-700"
+      (click)="toggleModal(3); toggleModal(3)"
+    >
+      Edit Student Feedback
+    </button>
+  </form>
+</app-modal>
+<app-modal
+  *ngIf="idNum === 3"
+  [isOpen]="isModalOpen"
+  [hasHeader]="true"
+  [headerName]="'Edit: ' + document.documentName"
+  (eventToggleModal)="toggleModal(3, $event)"
+>
+  <form
+    class="flex flex-col gap-6"
+    [formGroup]="oulcDocument"
+    (submit)="updateOulcSubmission()"
+  >
+    <div class="flex items-center justify-between">
+      <h3>Status</h3>
+      <select
+        name="status"
+        id=""
+        [value]="document.fileStatus"
+        formControlName="status"
+        class="block w-[25%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+      >
+        <option
+          *ngFor="let s of oulcStatuses"
+          [value]="s.id"
+          [selected]="s.id == document.fileStatus ? 'selected' : null"
+        >
+          {{ s.value }}
+        </option>
+      </select>
+    </div>
+    <hr />
+    <h2>Additional Comments</h2>
+    <textarea formControlName="feedback" class="text-sm">{{
+      document.feedback
+    }}</textarea>
+    <button
+      class="rounded bg-lime-600 px-6 py-3 text-white hover:bg-lime-700"
+      type="submit"
+    >
+      Send Student Feedback
+    </button>
+  </form>
+</app-modal>

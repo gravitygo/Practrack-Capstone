@@ -1,0 +1,751 @@
+<app-main-template>
+  <div class="flex w-full justify-between">
+    <h1 class="text-3xl">Company Listing</h1>
+    <label for="table-search" class="sr-only">Search</label>
+    <div class="flex items-center px-2">
+      <div class="relative mr-2">
+        <div
+          class="rtl:inset-r-0 pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3"
+        >
+          <ng-icon
+            name="matFilterAltOutline"
+            size="20px"
+            class="mr-0 text-gray-400"
+          ></ng-icon>
+        </div>
+        <input
+          type="search"
+          id="company-search"
+          class="block w-60 rounded-lg border border-gray-300 bg-gray-50 ps-10 pt-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          placeholder="Search for company"
+          [(ngModel)]="searchText"
+          (ngModelChange)="filterData()"
+        />
+      </div>
+      <button
+        class="flex items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+        type="button"
+        (click)="toggleModal(1)"
+        *ngIf="(role | async) == 'coordinator'"
+      >
+        <p class="text-xs font-medium text-white">Add Company</p>
+        <ng-icon
+          name="matPlusOutline"
+          size="16px"
+          class="mr-0 text-white"
+        ></ng-icon>
+      </button>
+    </div>
+  </div>
+  <hr class="mb-2 mt-2 h-[2px] w-full bg-neutral-300" />
+
+  <div
+    class="relative overflow-x-auto border-2 border-solid border-lime-700 shadow-md sm:rounded-lg"
+    *ngIf="(role | async) == 'student'"
+  >
+    <table
+      class="w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+    >
+      <thead
+        class="text-md bg-lime-800 text-center text-white dark:bg-gray-700 dark:text-gray-400"
+      >
+        <tr>
+          <th scope="col" class="px-6 py-3">Job Matching Profile</th>
+          <th scope="col" class="px-6 py-3">Primary Interest</th>
+          <th scope="col" class="px-6 py-3">Most Fit Company</th>
+          <th scope="col" class="px-6 py-3">Company Rate</th>
+        </tr>
+      </thead>
+      <tbody class="bg-emerald-50">
+        <tr
+          class="border-b text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+        >
+          <th
+            scope="row"
+            class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+          >
+            <button type="button" (click)="viewDetails()">
+              {{ profile.firstName }} {{ profile.lastName }}
+            </button>
+          </th>
+          <td class="px-6 py-4" *ngIf="profile.fieldName == null">
+            No interest set.
+          </td>
+
+          <td class="px-6 py-4" *ngIf="profile.fieldName != null">
+            {{ profile.fieldName }}
+          </td>
+          <td class="px-6 py-4" *ngIf="profile.fieldName != null">
+            {{ profile.recCompany }}
+          </td>
+          <td class="px-6 py-4" *ngIf="profile.fieldName == null">N/A</td>
+          <td class="px-6 py-4" *ngIf="profile.fieldName != null">
+            {{ profile.companyRate }}%
+          </td>
+          <td class="px-6 py-4" *ngIf="profile.fieldName == null">N/A</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <table
+      class="w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+    >
+      <thead
+        class="text-md bg-neutral-100 text-center text-neutral-800 dark:bg-gray-700 dark:text-gray-400"
+      >
+        <tr>
+          <th scope="col" class="px-6 py-3">Company Name</th>
+          <th scope="col" class="px-6 py-3">Address</th>
+          <th scope="col" class="px-6 py-3">Nature of Company</th>
+          <th scope="col" class="px-6 py-3">Job Position/s offered</th>
+          <th scope="col" class="px-6 py-3">
+            Point of Contact for Application
+          </th>
+          <th scope="col" class="px-6 py-3">Work Setup</th>
+          <th scope="col" class="px-6 py-3">Effectivity End Date</th>
+          <th
+            scope="col"
+            class="px-6 py-3"
+            *ngIf="(role | async) == 'coordinator'"
+          >
+            Edit
+          </th>
+          <th
+            scope="col"
+            class="px-6 py-3"
+            *ngIf="(role | async) == 'coordinator'"
+          >
+            Delete
+          </th>
+        </tr>
+      </thead>
+      <!-- BODY -->
+      <tbody>
+        <ng-container *ngFor="let companylist of paginatedCompanyListing">
+        <tr
+          class="border-t bg-white text-center dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+          [ngClass]="{
+            'past-date': isPastDate(companylist.formattedEffectivityEndDate),
+            'expanded': companylist.expanded
+          }"
+           (click)="toggleRowExpansion(companylist)"
+        >
+          <th
+            scope="row"
+            class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+          >
+            {{ companylist.companyName }}
+          </th>
+          <td class="relative block px-6 py-6 w-40 max-w-40">
+            <div class="overflow-hidden truncate">
+              {{ companylist.companyAddress }}
+            </div>
+          </td>
+          <td class="px-6 py-4">{{ companylist.natureofcompanystr }}</td>
+          <td class="px-6 py-4">
+            <span *ngFor="let job of companylist.jobs.jobs; let last = last"
+              >{{ job.jobTitle }}<span *ngIf="!last">, </span>
+            </span>
+          </td>
+
+          <td class="px-6 py-4">
+            <span *ngIf="companylist.pointOfContact.contacts">
+              <div
+                *ngFor="
+                  let phone of companylist.pointOfContact.contacts[0]?.phone
+                "
+              >
+                <span>{{ phone }}</span>
+              </div>
+              <div
+                *ngFor="
+                  let email of companylist.pointOfContact.contacts[1]?.email
+                "
+              >
+                <span>{{ email }}</span>
+              </div>
+              <div
+                *ngFor="
+                  let website of companylist.pointOfContact.contacts[2]?.website
+                "
+              >
+                <span>{{ website }}</span>
+              </div>
+            </span>
+          </td>
+          <td class="px-6 py-4">{{ companylist.worksetupstr }}</td>
+          <td class="px-6 py-4">
+            {{ companylist.formattedEffectivityEndDate }}
+          </td>
+          <td
+            class="items-center justify-center px-6 py-4"
+            *ngIf="(role | async) == 'coordinator'"
+          >
+            <button
+              id="edit{{ companylist.companyID }}"
+              class="px-2 py-1"
+              type="button"
+              (click)="toggleModal(2, undefined, companylist.companyID)"
+            >
+              <ng-icon
+                name="matEditOutline"
+                size="24px"
+                class="mr-0 text-gray-500 hover:text-gray-900"
+              ></ng-icon>
+            </button>
+          </td>
+          <td
+            class="items-center justify-center px-6 py-4"
+            *ngIf="(role | async) == 'coordinator'"
+          >
+            <button
+              id="delete{{ companylist.companyID }}"
+              class="px-2 py-1"
+              type="button"
+              (click)="toggleModal(3, undefined, companylist.companyID)"
+            >
+              <ng-icon
+                name="matDeleteOutline"
+                size="24px"
+                class="mr-0 text-gray-500 hover:text-gray-900"
+              ></ng-icon>
+            </button>
+          </td>
+        </tr>
+        <ng-container *ngIf="companylist.expanded">
+          <!-- Expanded row content goes here -->
+          <tr
+          class="border-b bg-white text-center dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+        >
+          <th>
+          </th>
+          <td class="relative block px-6 py-6 w-40 max-w-40">
+           
+              {{ companylist.companyAddress }}
+          </td>
+          <td></td>
+          <td class="px-6 py-4">
+            <span *ngFor="let job of companylist.jobs.jobs; let last = last"
+              >{{ job.jobTitle }}<span *ngIf="!last">, </span>
+            </span>
+          </td>
+
+          <td class="px-6 py-4">
+            <span *ngIf="companylist.pointOfContact.contacts">
+              <div
+                *ngFor="
+                  let phone of companylist.pointOfContact.contacts[0]?.phone
+                "
+              >
+                <span>{{ phone }}</span>
+              </div>
+              <div
+                *ngFor="
+                  let email of companylist.pointOfContact.contacts[1]?.email
+                "
+              >
+                <span>{{ email }}</span>
+              </div>
+              <div
+                *ngFor="
+                  let website of companylist.pointOfContact.contacts[2]?.website
+                "
+              >
+                <span>{{ website }}</span>
+              </div>
+            </span>
+          </td>
+          <td></td>
+          <td>  
+          </td>
+          <td class="items-center justify-center px-6 py-4">
+          </td>
+          <td class="items-center justify-center px-6 py-4">
+          </td>
+        </tr>
+        </ng-container>
+      </ng-container>
+      </tbody>
+    </table>
+    <mat-paginator
+      [length]="filteredCompanyListing.length"
+      [pageSize]="pageSize"
+      [showFirstLastButtons]="true"
+      [pageSizeOptions]="[5, 10, 15]"
+      (page)="handlePageEvent($event)"
+    >
+    </mat-paginator>
+  </div>
+
+  <!-- MODALS -->
+  <!-- Add Company -->
+  <app-modal *ngIf="idNum === 1" [isOpen]="isModalOpen">
+    <h1 class="mb-4 grow text-center text-xl font-semibold">Add Company</h1>
+
+    <form [formGroup]="addForm" (submit)="addCompany()">
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">Company Name</h4>
+        <input
+          placeholder="Enter Name"
+          type="text"
+          formControlName="addName"
+          class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        />
+      </div>
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">Address</h4>
+        <input
+          placeholder="Enter Address"
+          type="text"
+          formControlName="addAddress"
+          class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        />
+      </div>
+      <!-- SELECT REGION DIV -->
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">Region</h4>
+        <select
+          formControlName="addRegion"
+          class="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        >
+          <option value="" disabled selected>Select region</option>
+          <option
+            *ngFor="let region of locRegions"
+            [value]="region.designation"
+          >
+            {{ region.designation }}
+          </option>
+        </select>
+      </div>
+      <!-- SELECT PROVINCE DIV -->
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">Province</h4>
+        <select
+          formControlName="addProvince"
+          class="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        >
+          <option value="" disabled selected>Select province</option>
+          <option
+            *ngFor="let province of chosenProvinces"
+            [value]="province.name"
+          >
+            {{ province.name }}
+          </option>
+        </select>
+      </div>
+      <!-- SELECT CITY DIV -->
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">City</h4>
+        <select
+          formControlName="addCity"
+          class="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        >
+          <option value="" disabled selected>Select city</option>
+          <option *ngFor="let city of chosenCities" [value]="city.name">
+            {{ city.name }}
+          </option>
+        </select>
+      </div>
+      <!-- NATURE OF COMPANY DIV -->
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">
+          Nature of Company
+        </h4>
+        <select
+          id="addNature"
+          class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          formControlName="addNature"
+        >
+          <option value="" disabled selected>Select nature of company</option>
+          <option *ngFor="let field of nature" [value]="field.fieldID">
+            {{ field.fieldName }}
+          </option>
+        </select>
+      </div>
+      <!-- WORK SETUP DIV -->
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">Work Setup</h4>
+        <select
+          id="addWorkSetup"
+          class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          formControlName="addWorkSetup"
+        >
+          <option value="" disabled selected>Select work setup type</option>
+          <option *ngFor="let type of worksetup" [value]="type.lookupID">
+            {{ type.value }}
+          </option>
+        </select>
+      </div>
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">
+          Effectivity End Date
+        </h4>
+        <mat-form-field
+          class="border-[1px]rounded-md w-50% h-50 rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        >
+          <mat-label>Choose a date</mat-label>
+          <input
+            matInput
+            [matDatepicker]="picker"
+            formControlName="addEndDate"
+          />
+          <mat-hint>MM/DD/YYYY</mat-hint>
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="picker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+      </div>
+      <div class="input-group mb-4" formArrayName="addJobs">
+        <h4 class="text-base font-medium text-neutral-600">
+          Job positions offered
+        </h4>
+        <button
+          type="button"
+          class="mb-2 rounded-md border-2 border-blue-500 bg-gray-100 px-2 py-1 text-center text-xs font-normal text-blue-500"
+          (click)="addJob(1)"
+        >
+          Add
+        </button>
+        <div class="w-[40%] flex-col">
+          <div
+            class="flex gap-2"
+            *ngFor="let job of jobControls; let i = index"
+          >
+            <select
+              class="mb-2 w-full rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+              [formControlName]="i"
+              placeholder="Enter job position offered"
+            >
+              <option value="" disabled selected>
+                Enter job position offered
+              </option>
+              <option *ngFor="let job of jobList" [value]="job.jobID">
+                {{ job.jobTitle }}
+              </option>
+            </select>
+
+            <button
+              type="button"
+              class="dark:border-neutral-60 mb-2 rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs"
+              (click)="removeJob(i, 1)"
+            >
+              X
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">
+          Point of Contact for Application
+        </h4>
+        <div class="w-[40%] flex-col" formArrayName="addContacts">
+          <div class="mb-4 flex gap-3">
+            <select
+              id="addContact"
+              class="block w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-1 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+              formControlName="addContact"
+              #selectedOption
+            >
+              <option value="" disabled selected>Select contact type</option>
+              <option value="phone">Phone</option>
+              <option value="email">Email</option>
+              <option value="website">Website</option>
+            </select>
+            <button
+              type="button"
+              class="rounded-md border-2 border-blue-500 bg-gray-100 px-2 py-1 text-center text-xs font-normal text-blue-500"
+              (click)="addContact(selectedOption.value, 1)"
+            >
+              Add
+            </button>
+          </div>
+          <div
+            class="flex gap-2"
+            *ngFor="let contact of contactControls; let i = index"
+          >
+            <input
+              placeholder="Enter {{ selectedContact[i] }}"
+              [type]="selectedContact[i] === 'phone' ? 'number' : 'text'"
+              type="text"
+              [formControlName]="i"
+              class="mb-2 w-full rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+            />
+            <button
+              type="button"
+              class="dark:border-neutral-60 mb-2 rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs"
+              (click)="removeContact(i, 1)"
+            >
+              X
+            </button>
+          </div>
+        </div>
+      </div>
+      <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
+      <button
+        class="flex w-full items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+        type="submit"
+      >
+        <p class="text-xs font-medium text-white">Add</p>
+      </button>
+    </form>
+  </app-modal>
+  <!-- Edit Company -->
+  <app-modal
+    *ngIf="idNum === 2"
+    [isOpen]="isModalOpen"
+    (eventToggleModal)="toggleModal(2, $event, companyID)"
+  >
+    <h1 class="mb-4 grow text-center text-xl font-semibold">Edit Company</h1>
+
+    <form [formGroup]="editForm" (submit)="saveCompany(companyID)">
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">Company Name</h4>
+        <input
+          placeholder="Enter Name"
+          type="text"
+          formControlName="editName"
+          class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        />
+      </div>
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">Address</h4>
+        <input
+          placeholder="Enter Address"
+          type="text"
+          formControlName="editAddress"
+          class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        />
+      </div>
+      <!-- SELECT REGION DIV -->
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">Region</h4>
+        <select
+          formControlName="editRegion"
+          class="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        >
+          <option value="" disabled selected>Select region</option>
+          <option
+            *ngFor="let region of locRegions"
+            [value]="region.designation"
+          >
+            {{ region.designation }}
+          </option>
+        </select>
+      </div>
+      <!-- SELECT PROVINCE DIV -->
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">Province</h4>
+        <select
+          formControlName="editProvince"
+          class="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        >
+          <option value="" disabled selected>Select province</option>
+          <option
+            *ngFor="let province of chosenProvinces"
+            [value]="province.name"
+          >
+            {{ province.name }}
+          </option>
+        </select>
+      </div>
+      <!-- SELECT CITY DIV -->
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">City</h4>
+        <select
+          formControlName="editCity"
+          class="w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        >
+          <option value="" disabled selected>Select city</option>
+          <option *ngFor="let city of chosenCities" [value]="city.name">
+            {{ city.name }}
+          </option>
+        </select>
+      </div>
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">
+          Nature of Company
+        </h4>
+        <select
+          id="editNature"
+          class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          formControlName="editNature"
+        >
+          <option value="" disabled selected>Select nature of company</option>
+          <option *ngFor="let field of nature" [ngValue]="field.fieldID">
+            {{ field.fieldName }}
+          </option>
+        </select>
+      </div>
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">Work Setup</h4>
+        <select
+          id="editWorkSetup"
+          class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          formControlName="editWorkSetup"
+        >
+          <option value="" disabled selected>Select work setup type</option>
+          <option *ngFor="let type of worksetup" [ngValue]="type.lookupID">
+            {{ type.value }}
+          </option>
+        </select>
+      </div>
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">
+          Effectivity End Date
+        </h4>
+        <mat-form-field
+          class="border-[1px]rounded-md w-50% h-50 rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        >
+          <mat-label>Choose a date</mat-label>
+          <input
+            matInput
+            [matDatepicker]="picker"
+            formControlName="editEndDate"
+          />
+          <mat-hint>MM/DD/YYYY</mat-hint>
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="picker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+      </div>
+      <div class="input-group mb-4" formArrayName="editJobs">
+        <h4 class="text-base font-medium text-neutral-600">
+          Job positions offered
+        </h4>
+        <button
+          type="button"
+          class="mb-2 rounded-md border-2 border-blue-500 bg-gray-100 px-2 py-1 text-center text-xs font-normal text-blue-500"
+          (click)="addJob(2)"
+        >
+          Add
+        </button>
+        <div class="w-[40%] flex-col">
+          <div
+            class="flex gap-2"
+            *ngFor="let job of jobControlsEdit; let i = index"
+          >
+            <select
+              class="mb-2 w-full rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+              [formControlName]="i"
+              placeholder="Enter job position offered"
+            >
+              <option value="" disabled>Enter job position offered</option>
+              <option *ngFor="let job of jobList" [ngValue]="job.jobID">
+                {{ job.jobTitle }}
+              </option>
+            </select>
+
+            <button
+              type="button"
+              class="dark:border-neutral-60 mb-2 rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs"
+              (click)="removeJob(i, 2)"
+            >
+              X
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">
+          Point of Contact for Application
+        </h4>
+        <div class="w-[40%] flex-col" formArrayName="editContacts">
+          <div class="mb-4 flex gap-3">
+            <select
+              id="editContact"
+              class="block w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-1 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+              formControlName="editContact"
+              #selectedOption
+            >
+              <option value="" disabled selected>Select contact type</option>
+              <option value="phone">Phone</option>
+              <option value="email">Email</option>
+              <option value="website">Website</option>
+            </select>
+            <button
+              type="button"
+              class="rounded-md border-2 border-blue-500 bg-gray-100 px-2 py-1 text-center text-xs font-normal text-blue-500"
+              (click)="addContact(selectedOption.value, 2)"
+            >
+              Add
+            </button>
+          </div>
+          <div
+            class="flex gap-2"
+            *ngFor="let contact of contactControlsEdit; let i = index"
+          >
+            <input
+              placeholder="Enter {{ selectedContact[i] }}"
+              [type]="selectedContact[i] === 'phone' ? 'number' : 'text'"
+              type="text"
+              [formControlName]="i"
+              class="mb-2 w-full rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+            />
+            <button
+              type="button"
+              class="dark:border-neutral-60 mb-2 rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs"
+              (click)="removeContact(i, 2)"
+            >
+              X
+            </button>
+          </div>
+        </div>
+      </div>
+      <hr class="mb-6 mt-6 h-[2px] w-full bg-neutral-300" />
+      <!-- <div
+        class="mb-4 flex items-center rounded border border-gray-200 ps-4 dark:border-gray-700"
+      >
+        <input
+          id="deleteCheckbox"
+          type="checkbox"
+          value=""
+          formControlName="deleteCheckbox"
+          name="delete-checkbox"
+          class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+        />
+        <label
+          for="bordered-checkbox-1"
+          class="ms-2 py-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+          >Delete this company from list</label
+        >
+      </div> -->
+      <button
+        class="mb-4 flex w-full items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+        type="submit"
+      >
+        <p class="text-xs font-medium text-white">Save</p>
+      </button>
+    </form>
+  </app-modal>
+  <!-- END Edit Company -->
+
+  <!-- CONFIRM DELETE MODAL -->
+  <app-modal
+    *ngIf="idNum === 3"
+    [isOpen]="isModalOpen"
+    (eventToggleModal)="toggleModal(3, $event, companyID)"
+  >
+    <h1 class="mb-2 grow text-center text-xl font-semibold">Delete Company</h1>
+    <div class="text-center">
+      <p class="text-sm font-normal">
+        Are you sure in deleting this company? This cannot be undone.
+      </p>
+    </div>
+    <hr class="mb-4 mt-2 h-[2px] w-full bg-neutral-300" />
+    <form (submit)="deleteCompany(companyID)">
+      <button
+        class="mt-6 flex w-full items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+        type="submit"
+      >
+        <p class="text-xs font-medium text-white">Confirm</p>
+      </button>
+    </form>
+  </app-modal>
+  <!-- END CONFIRM DELETE MODAL -->
+</app-main-template>
+<app-loading></app-loading>

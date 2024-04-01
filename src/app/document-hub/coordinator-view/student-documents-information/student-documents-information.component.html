@@ -1,0 +1,59 @@
+<table
+  class="max-h-[80%] w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+>
+  <thead
+    class="text-md bg-neutral-100 text-center text-neutral-800 dark:bg-gray-700 dark:text-gray-400"
+  >
+    <tr>
+      <th scope="col" class="px-6 py-3">File Name</th>
+      <th scope="col" class="px-6 py-3">Version</th>
+      <th scope="col" class="px-6 py-3">Submitted On</th>
+      <th scope="col" class="px-6 py-3">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr
+      *ngIf="documentRequirements && documentRequirements.length == 0"
+      class="cursor-pointer border-b bg-red-200 text-center hover:bg-red-300"
+    >
+      <td class="text-lg text-red-600" colspan="4">No Submissions yet.</td>
+    </tr>
+    <tr
+      class="cursor-pointer border-b text-center dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+      [ngClass]="
+        rows.submittedOn
+          ? 'bg-white hover:bg-gray-50'
+          : 'bg-red-200 hover:bg-red-300'
+      "
+      *ngFor="let rows of documentRequirements; index as i"
+      [routerLink]="rows.documentID + ''"
+    >
+      <th
+        scope="row"
+        class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+      >
+        {{ rows.requirement }}
+      </th>
+      <td class="px-6 py-4">
+        {{ rows.version ?? '-' }}
+      </td>
+      <td class="px-6 py-4">
+        {{ rows.submittedOn ? (rows.submittedOn | date: 'MM/dd/yyyy') : '-' }}
+      </td>
+      <td class="px-6 py-4">
+        <div
+          class="inline-flex w-3/6 items-center gap-3 rounded-lg p-2 text-center text-sm font-medium text-white"
+          type="button"
+          [ngClass]="remarksColor[rows.status]"
+        >
+          <ng-icon
+            [name]="remarksIcon[rows.status]"
+            size="16px"
+            class="mr-0 text-white"
+          ></ng-icon>
+          {{ rows.status }}
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>

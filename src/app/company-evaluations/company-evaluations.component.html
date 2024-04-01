@@ -1,0 +1,108 @@
+<app-main-template>
+  <div class="flex w-full justify-between">
+    <h1 class="text-3xl">Company Evaluations</h1>
+  </div>
+  <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
+  <div class="mt-4 flex flex-col gap-4">
+    <div class="flex w-full gap-4">
+      <div
+        class="block w-1/4 rounded-lg border border-gray-200 bg-white p-4 shadow"
+      >
+        <h3 class="text-xl font-semibold">Evaluation Respondents</h3>
+        <h4 class="text-sm font-medium text-neutral-400">
+          {{ termString }}
+        </h4>
+        <hr class="mb-4 h-[1px] w-full bg-neutral-300" />
+        <app-eval-res-donut
+          [total]="numStudents"
+          [data]="evalRatio"
+        ></app-eval-res-donut>
+      </div>
+      <div
+        class="block w-3/4 rounded-lg border border-gray-200 bg-white p-4 shadow"
+      >
+        <h3 class="text-xl font-semibold">Evaluation Scores</h3>
+        <h4 class="text-sm font-medium text-neutral-400">
+          Based on Overall Responses
+        </h4>
+        <hr class="mb-4 h-[1px] w-full bg-neutral-300" />
+        <table
+          class="w-full table-fixed text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+        >
+          <thead
+            class="text-md bg-white text-center text-neutral-600 dark:bg-gray-800 dark:text-gray-400"
+          >
+            <tr>
+              <th scope="col" class="px-6 py-3 text-lg">Relevance</th>
+              <th scope="col" class="border-x px-6 py-3 text-lg">
+                Scope of Work
+              </th>
+              <th scope="col" class="px-6 py-3 text-lg">Career Development</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              class="bg-white text-center dark:border-gray-700 dark:bg-gray-800"
+            >
+              <td class="px-6 py-2">
+                <app-eval-grade-donut [data]="relevance"></app-eval-grade-donut>
+              </td>
+              <td class="border-x px-6 py-2">
+                <app-eval-grade-donut [data]="scope"></app-eval-grade-donut>
+              </td>
+              <td class="px-6 py-2">
+                <app-eval-grade-donut [data]="dev"></app-eval-grade-donut>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div
+      class="block h-full w-full rounded-lg border border-gray-200 bg-white p-4 shadow"
+    >
+      <h3 class="text-xl font-semibold">Overall Evaluations</h3>
+      <hr class="h-[1px] w-full bg-neutral-300" />
+      <div class="flex">
+        <div class="w-2/3 p-4">
+          <app-eval-line
+            [labels]="chartBatches"
+            [data]="chartVals"
+          ></app-eval-line>
+        </div>
+        <div class="flex w-1/3 flex-col p-4">
+          <table
+            class="table-fixed text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+          >
+            <thead
+              class="text-md bg-white text-center text-neutral-600 dark:bg-gray-800 dark:text-gray-400"
+            >
+              <tr>
+                <th scope="col" class="text-l px-6 py-3">Batch</th>
+                <th scope="col" class="text-l px-6 py-3">Evaluation Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                class="border bg-white text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+                *ngFor="let index of getVisibleIndices()"
+              >
+                <td class="px-6 py-2">
+                  <b>{{ evalStats[index].acadTerm }}</b>
+                </td>
+                <td class="px-6 py-2">{{ evalStats[index].count }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <mat-paginator
+            [length]="evalStats.length"
+            [pageSize]="5"
+            [pageSizeOptions]="[5, 10, 15, 20]"
+            (page)="paginator.pageIndex = $event.pageIndex"
+          >
+          </mat-paginator>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-main-template>

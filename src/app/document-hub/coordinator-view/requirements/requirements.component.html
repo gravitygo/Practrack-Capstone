@@ -1,0 +1,226 @@
+<div class="flex flex-col gap-6">
+  <div class="flex w-full items-center gap-2">
+    <p>Batch</p>
+    <select
+      #batch
+      name=""
+      id=""
+      (change)="changeList(batch.value)"
+      class="focus: block w-[25%] rounded-md border border-blue-500 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+    >
+      <option *ngFor="let item of academicTerm" [value]="item.id">
+        {{ item.value }}
+      </option>
+    </select>
+  </div>
+  <div class="relative w-full shadow-md sm:rounded-lg">
+    <table
+      class="max-h-[80%] w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+    >
+      <thead
+        class="text-md bg-neutral-100 text-center text-neutral-800 dark:bg-gray-700 dark:text-gray-400"
+      >
+        <tr>
+          <th scope="col" class="px-6 py-3">Enable</th>
+          <th scope="col" class="px-6 py-3">Requirement</th>
+          <th scope="col" class="px-6 py-3">Deployment Stage</th>
+          <th scope="col" class="px-6 py-3">Due On</th>
+          <th scope="col" class="px-6 py-3">Edit</th>
+          <th scope="col" class="px-6 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          class="border-b text-center dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+          [ngClass]="
+            rows.phase
+              ? 'bg-white hover:bg-gray-50'
+              : 'bg-red-200 hover:bg-red-300'
+          "
+          *ngFor="let rows of requirements; index as i"
+        >
+          <td scope="row" class="px-6 py-4">
+            <input
+              type="checkbox"
+              name=""
+              id=""
+              [checked]="rows.enabled"
+              (change)="updateCheckboxList(rows.id, $event)"
+            />
+          </td>
+          <th
+            scope="row"
+            class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+          >
+            {{ rows.requirement }}
+          </th>
+          <td class="px-6 py-4">
+            {{ rows.phase ?? 'No Phase Yet' }}
+          </td>
+          <td class="px-6 py-4">
+            {{ rows.dueOn | date: 'MM/dd/yyyy' }}
+          </td>
+          <td class="px-6 py-4">
+            <button
+              class="inline-flex items-center rounded-lg p-2 text-center text-sm font-medium dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+              type="button"
+              (click)="
+                setCurrentRequirementId(rows.id);
+                setRequirementValues(
+                  rows.phaseId,
+                  rows.dueOn,
+                  rows.DocumentID,
+                  rows.id
+                );
+                toggleModal(4, undefined, rows.requirement)
+              "
+            >
+              <ng-icon
+                name="matEditOutline"
+                size="24px"
+                class="mr-0 text-gray-500 hover:text-gray-900"
+              ></ng-icon>
+            </button>
+          </td>
+          <td class="px-6 py-4"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="flex justify-end gap-4">
+    <button
+      class="rounded bg-lime-600 px-6 py-3 text-white hover:bg-lime-700"
+      (click)="toggleModal(1)"
+    >
+      Add Requirements
+    </button>
+  </div>
+</div>
+<app-modal
+  *ngIf="idNum === 1"
+  [isOpen]="isModalOpen"
+  [hasHeader]="true"
+  headerName="Create Assignment"
+  (eventToggleModal)="toggleModal(1, $event)"
+>
+  <form
+    class="flex flex-col gap-6"
+    [formGroup]="addFileRequirement"
+    (submit)="addNewFileRequirement()"
+  >
+    <h4 class="text-base font-medium text-neutral-600">Requirement Name</h4>
+    <input
+      class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+      formControlName="name"
+    />
+    <p
+      class="text-sm font-normal text-red-500"
+      *ngIf="
+        addFileRequirement.touched && addFileRequirement.get('name')?.invalid
+      "
+    >
+      Please fill out the form.
+    </p>
+    <hr />
+
+    <button
+      class="w-full rounded bg-lime-600 px-6 py-3 text-center text-white hover:bg-lime-700"
+      type="submit"
+    >
+      Save
+    </button>
+  </form>
+</app-modal>
+<app-modal
+  *ngIf="idNum === 4"
+  [isOpen]="isModalOpen"
+  [hasHeader]="true"
+  [headerName]="'Edit Date: ' + editHeaderName"
+  (eventToggleModal)="toggleModal(4, $event)"
+>
+  <form
+    [formGroup]="fileRequirement"
+    class="flex flex-col gap-6"
+    (submit)="updateAcadFile()"
+  >
+    <div>
+      <h3 class="text-base font-medium">OJT Phase</h3>
+      <select
+        formControlName="phase"
+        class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+      >
+        <option *ngFor="let rows of ojtPhases" [value]="rows.id" required>
+          {{ rows.value }}
+        </option>
+      </select>
+      <p
+        *ngIf="fileRequirement.value.phase === 'null'"
+        class="text-sm font-normal text-red-500"
+      >
+        Input a Phase.
+      </p>
+    </div>
+    <div>
+      <h3 class="text-base font-medium">
+        {{ currentOjtPhase ? 'Overwrite file' : 'Upload file' }}
+      </h3>
+      <div class="flex w-full items-center justify-center gap-2">
+        <input
+          (change)="onFileSelected($event)"
+          type="file"
+          accept=".pdf"
+          class="hidden"
+          class="block w-full cursor-pointer rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-900 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:placeholder-gray-400"
+        />
+      </div>
+
+      <p
+        *ngIf="!currentAcadFileId && !fileValue"
+        class="text-sm font-normal text-red-500"
+      >
+        Input a File.
+      </p>
+    </div>
+    <div>
+      <h3 class="text-base font-medium">Due Date</h3>
+      <mat-form-field
+        class="border-[1px]rounded-md w-50% h-50 rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+      >
+        <mat-label>Choose a due date</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="date" />
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+    <hr />
+
+    <button
+      class="w-full rounded bg-lime-600 px-6 py-3 text-center text-white hover:bg-lime-700"
+      type="submit"
+    >
+      Save
+    </button>
+  </form>
+</app-modal>
+
+<app-modal
+  *ngIf="idNum === 5"
+  [isOpen]="isModalOpen"
+  [hasHeader]="true"
+  [headerName]="'Please Edit the file'"
+  (eventToggleModal)="toggleModal(5, $event)"
+>
+  <div class="flex flex-col gap-8">
+    <h1 class="text-3xl">
+      Please add a phase to this file to enable this feature.
+    </h1>
+    <hr />
+    <button
+      class="w-full rounded bg-lime-600 px-6 py-3 text-center text-white hover:bg-lime-700"
+      (click)="toggleModal(5)"
+    >
+      Close
+    </button>
+  </div>
+</app-modal>

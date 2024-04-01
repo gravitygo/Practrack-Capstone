@@ -1,0 +1,28 @@
+<div
+  class="flex flex-col gap-6 rounded border border-neutral-300 bg-neutral-100 p-6"
+>
+  <div class="flex w-full py-3">
+    <button
+      *ngFor="let tab of tabs"
+      class="tab-button flex grow flex-col items-center border-b-[3px] px-12 py-5"
+      (click)="showTab(tab.template)"
+      [ngClass]="
+        activeTab == tab.template
+          ? 'border-lime-700 bg-emerald-50'
+          : 'border-neutral-400'
+      "
+    >
+      <div class="flex gap-3">
+        <app-title-icon
+          [iconName]="tab.icon"
+          [color]="tab.iconColor"
+        ></app-title-icon>
+        <h3 class="font-medium text-lime-700">{{ tab.name }}</h3>
+      </div>
+    </button>
+  </div>
+
+  <div class="tab-content">
+    <ng-content></ng-content>
+  </div>
+</div>

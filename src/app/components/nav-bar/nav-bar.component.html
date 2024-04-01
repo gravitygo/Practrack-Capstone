@@ -1,0 +1,125 @@
+<div class="sticky top-0 flex h-[100vh] gap-3.5 px-3.5 py-2">
+  <nav
+    [class.w-64]="!shortNav"
+    class="flex flex-col items-center gap-6 py-8"
+    *ngIf="role | async"
+  >
+    <div
+      (click)="toggleNav()"
+      class="flex flex-row items-center justify-center"
+    >
+      <img
+        src="../../assets/short-logo.svg"
+        [class.w-12]="shortNav"
+        [class]="{ 'mr-0': shortNav, 'mr-[10px]': !shortNav }"
+        alt=""
+        class="transition-width w-8"
+      />
+      <h1
+        [class.opacity-100]="!shortNav"
+        [class.w-32]="!shortNav"
+        class="font-logo flex w-0 text-3xl font-semibold text-lime-600 opacity-0 dark:text-lime-700"
+      >
+        practrack
+      </h1>
+    </div>
+
+    <ul class="flex w-full list-none flex-col gap-2">
+      <app-nav-item
+        icon="matHomeOutline"
+        name="home"
+        link="home"
+        [shortNav]="shortNav"
+        [active]="navLocation == 'home'"
+        routerLink="/home"
+      ></app-nav-item>
+      <app-nav-item
+        icon="matNotificationsOutline"
+        name="announcements"
+        [shortNav]="shortNav"
+        [active]="navLocation == 'announcements'"
+        [routerLink]="'/announcements/' + userID"
+        *ngIf="(role | async) == 'student'"
+      ></app-nav-item>
+      <app-nav-item
+        icon="matNotificationsOutline"
+        name="announcements"
+        [shortNav]="shortNav"
+        [active]="navLocation == 'announcements'"
+        routerLink="/announcements"
+        [routerLink]="'/announcements/' + userID + '/coor'"
+        *ngIf="(role | async) == 'coordinator'"
+      ></app-nav-item>
+      <app-nav-item
+        icon="matContentPasteOutline"
+        name="Document Hub"
+        link="Document Hub"
+        [shortNav]="shortNav"
+        [active]="navLocation == 'documentHub'"
+        [routerLink]="'/documentHub/' + (role | async)"
+      ></app-nav-item>
+      <app-nav-item
+        icon="matSmsOutline"
+        name="inbox"
+        link="inbox"
+        [shortNav]="shortNav"
+        [active]="navLocation == 'inbox'"
+        routerLink="/inbox"
+      ></app-nav-item>
+      <app-nav-item
+        icon="matWorkOutlineOutline"
+        name="company listing"
+        link="company listing"
+        [shortNav]="shortNav"
+        [active]="navLocation == 'companylisting'"
+        routerLink="/companylisting"
+      ></app-nav-item>
+      <app-nav-item
+        icon="matSettingsOutline"
+        name="MOA DSS"
+        link="MOA DSS"
+        [shortNav]="shortNav"
+        [active]="navLocation == 'moaDSS'"
+        [routerLink]="'/moaDSS/' + userID"
+        *ngIf="(role | async) !== 'student'"
+      ></app-nav-item>
+      <app-nav-item
+        icon="matAccountTreeOutline"
+        name="job matching"
+        link="job matching"
+        [shortNav]="shortNav"
+        [active]="navLocation == 'jobMatching'"
+        routerLink="/jobMatching"
+        *ngIf="(role | async) !== 'student'"
+      ></app-nav-item>
+      <app-nav-item
+        icon="matGradeOutline"
+        name="company evaluations"
+        link="company evaluations"
+        [shortNav]="shortNav"
+        [active]="navLocation == 'companyEvaluations'"
+        routerLink="/companyEvaluations"
+        *ngIf="(role | async) !== 'student'"
+      ></app-nav-item>
+      <app-nav-item
+        icon="matAccountCircleOutline"
+        name="account"
+        link="account"
+        [shortNav]="shortNav"
+        [active]="navLocation == 'account'"
+        [routerLink]="'/account/' + userID"
+      ></app-nav-item>
+      <li class="flex items-center rounded px-3 py-2 hover:bg-neutral-300">
+        <ng-icon
+          name="matLogoutOutline"
+          size="20px"
+          class="mr-3 hover:text-gray-900"
+        ></ng-icon>
+        <button (click)="logout()">
+          <p class="font-medium text-neutral-500">Logout</p>
+        </button>
+      </li>
+    </ul>
+  </nav>
+  <hr class="h-[100%] w-[1px] bg-neutral-300" />
+</div>

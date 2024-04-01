@@ -1,0 +1,26 @@
+<li class="nav-link group">
+  <a
+    [routerLink]="'/' + name"
+    routerLinkActive="active"
+    [class]="{ 'p-2': shortNav, 'px-3': !shortNav, 'py-2': !shortNav }"
+    class="flex items-center rounded group-hover:bg-neutral-300"
+    [href]="'/' + link"
+  >
+    <ng-icon
+      [class.text-sky-600]="active"
+      [name]="icon"
+      [size]="shortNav ? '40px' : '20px'"
+      [class.w-12]="shortNav"
+      [class.mr-3]="!shortNav"
+      class="mr-0 font-light"
+    ></ng-icon>
+    <p
+      [class.opacity-100]="!shortNav"
+      [class.w-32]="!shortNav"
+      class="w-0 font-medium capitalize text-neutral-500 opacity-0"
+      [class.text-neutral-900]="active"
+    >
+      {{ name }}
+    </p>
+  </a>
+</li>

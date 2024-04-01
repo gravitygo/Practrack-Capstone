@@ -1,0 +1,157 @@
+<app-main-template>
+  <div class="flex w-full justify-between">
+    <h1 class="text-3xl">MOA DSS</h1>
+    <button
+      class="flex items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+      type="button"
+      routerLink="check"
+    >
+      <p class="text-xs font-medium text-white">Configure Criteria</p>
+      <ng-icon
+        name="matSettingsOutline"
+        size="16px"
+        class="mr-0 text-white"
+      ></ng-icon>
+    </button>
+  </div>
+  <span
+    >Only companies which have been evaluated by students and are in the company
+    list will be shown here.</span
+  >
+  <hr class="mb-4 mt-2 h-[2px] w-full bg-neutral-300" />
+  <div
+    *ngIf="!configChecker"
+    class="flex h-full items-center justify-center overflow-x-auto bg-neutral-100 text-center text-neutral-800 shadow-md dark:bg-gray-700 dark:text-gray-400 sm:rounded-lg"
+  >
+    <div>
+      <h2 class="text-2xl font-medium">
+        You have not yet set your preferences in criteria.
+      </h2>
+      <p class="text-lg">
+        Please set up your preferences before viewing MOA results.
+      </p>
+      <button
+        type="button"
+        class="mt-6 rounded-md border-2 border-lime-700 bg-gray-100 px-6 py-3 text-center text-sm font-medium text-lime-700 hover:bg-gray-200"
+        routerLink="check"
+      >
+        Configure Criteria
+      </button>
+    </div>
+  </div>
+  <div *ngIf="configChecker">
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+      <table
+        class="w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+      >
+        <thead
+          class="text-md bg-neutral-100 text-center text-neutral-800 dark:bg-gray-700 dark:text-gray-400"
+        >
+          <tr>
+            <th scope="col" class="px-6 py-3">Company Name</th>
+            <th scope="col" class="px-6 py-3">Relevance</th>
+            <th scope="col" class="px-6 py-3">Scope of Work</th>
+            <th scope="col" class="px-6 py-3">Career Development</th>
+            <th scope="col" class="px-6 py-3">Effectivity End Date</th>
+            <th scope="col" class="px-6 py-3">Renew Partnership</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let company of companies; let i = index"
+            class="border-b bg-white text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+          >
+            <th
+              scope="row"
+              class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+            >
+              <a
+                [routerLink]="'companyDetails/' + companies[i].companyName"
+                class="hover:underline"
+              >
+                {{ companies[i].companyName }}
+              </a>
+            </th>
+            <td class="px-6 py-4" *ngIf="companies[i].sheetData != null">
+              {{ companies[i].sheetData[6] }}
+            </td>
+            <td
+              class="px-6 py-4 text-gray-500"
+              *ngIf="companies[i].sheetData == null"
+            >
+              No evaluations yet.
+            </td>
+            <td class="px-6 py-4" *ngIf="companies[i].sheetData != null">
+              {{ companies[i].sheetData[10] }}
+            </td>
+            <td
+              class="px-6 py-4 text-gray-500"
+              *ngIf="companies[i].sheetData == null"
+            >
+              No evaluations yet.
+            </td>
+            <td class="px-6 py-4" *ngIf="companies[i].sheetData != null">
+              {{ companies[i].sheetData[12] }}
+            </td>
+            <td
+              class="px-6 py-4 text-gray-500"
+              *ngIf="companies[i].sheetData == null"
+            >
+              No evaluations yet.
+            </td>
+            <td
+              class="px-6 py-4"
+              [ngClass]="{
+                'past-date': isPastDate(
+                  companies[i].formattedEffectivityEndDate
+                )
+              }"
+            >
+              {{ companies[i].formattedEffectivityEndDate }}
+            </td>
+            <td class="px-6 py-4">
+              <!-- 0.5 -->
+              <div
+                *ngIf="
+                  companies[i].dssAveRating > 0.5 &&
+                  companies[i].sheetData != null
+                "
+                class="inline-block rounded bg-emerald-600 px-1.5 py-1"
+              >
+                <ng-icon
+                  size="16px"
+                  name="matThumbUpAltOutline"
+                  class="text-white"
+                ></ng-icon>
+              </div>
+              <div
+                *ngIf="
+                  companies[i].dssAveRating <= 0.5 &&
+                  companies[i].sheetData != null
+                "
+                class="inline-block rounded bg-red-600 px-1.5 py-1"
+              >
+                <ng-icon
+                  size="16px"
+                  name="matThumbDownAltOutline"
+                  class="text-white"
+                ></ng-icon>
+              </div>
+              <div
+                *ngIf="companies[i].sheetData == null"
+                class="inline-block rounded bg-gray-400 px-1.5 py-1"
+              >
+                <ng-icon
+                  size="16px"
+                  name="matContentPasteOffOutline"
+                  class="text-white"
+                ></ng-icon>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</app-main-template>
+<app-loading></app-loading>

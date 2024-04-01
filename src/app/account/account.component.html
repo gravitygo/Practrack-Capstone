@@ -1,0 +1,472 @@
+<app-main-template>
+  <div class="flex w-full justify-between">
+    <h1 class="text-3xl">Account</h1>
+  </div>
+  <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
+
+  <!-- WARNING: <1 COORDINATOR -->
+  <div
+    class="ml-2 w-full rounded-lg border border-gray-200 bg-red-100 p-4 shadow"
+    *ngIf="(role | async) == 'coordinator' && toggleTurnover"
+  >
+    <div class="flex">
+      <ng-icon
+        name="matWarningAmberRound"
+        size="2.25rem"
+        class="text-red-600"
+      ></ng-icon>
+      <p class="ml-2 text-sm font-medium text-red-900">
+        There is currently more than one active coordinator account. If you are
+        not the current coordinator, please deactivate to complete coordinator
+        turnover.
+      </p>
+    </div>
+  </div>
+
+  <form [formGroup]="accountForm" (submit)="updateAccount(userID)">
+    <div class="flex">
+      <div class="w-2/5">
+        <div
+          class="m-2 w-full rounded-lg border border-gray-200 bg-gray-100 p-4 shadow"
+        >
+          <div class="flex place-content-end gap-3 p-4">
+            <app-title-icon iconName="matPersonOutline"></app-title-icon>
+            <h1 class="grow text-xl font-semibold">Account Details</h1>
+          </div>
+          <hr class="mb-4 h-[2px] w-full bg-neutral-300" />
+          <div
+            class="mb-3 ml-6 mr-6 flex place-items-center"
+            *ngIf="(role | async) == 'coordinator'"
+          >
+            <h3 class="grow text-base font-medium">First Name</h3>
+            <input
+              type="text"
+              class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+              formControlName="accFirstCoor"
+            />
+          </div>
+          <div
+            class="mb-3 ml-6 mr-6 flex place-items-center"
+            *ngIf="(role | async) == 'coordinator'"
+          >
+            <h3 class="grow text-base font-medium">Last Name</h3>
+            <input
+              type="text"
+              class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+              formControlName="accLastCoor"
+            />
+          </div>
+          <div class="mb-3 ml-6 mr-6 flex place-items-center">
+            <h3 class="grow text-base font-medium">DLSU Email</h3>
+            <input
+              value="email dito"
+              type="text"
+              class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+              formControlName="accEmail"
+            />
+          </div>
+          <div
+            class="mb-3 ml-6 mr-6 flex place-items-center"
+            *ngIf="(role | async) == 'student'"
+          >
+            <h3 class="grow text-base font-medium">ID Number</h3>
+            <input
+              value="12345678"
+              type="number"
+              class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+              formControlName="accIdNum"
+            />
+          </div>
+          <a
+            [routerLink]="'resetPassword'"
+            class="ml-6 text-sm font-medium text-emerald-600 hover:text-emerald-400"
+            >Reset password
+          </a>
+          <a
+            (click)="toggleModal(2)"
+            class="ml-6 text-sm font-medium text-red-600 hover:cursor-pointer hover:text-red-400"
+            *ngIf="(role | async) == 'coordinator' && toggleTurnover"
+            >Deactivate account
+          </a>
+        </div>
+        <div
+          class="m-2 w-full rounded-lg border border-gray-200 bg-gray-100 p-4 shadow"
+          *ngIf="(role | async) == 'student'"
+        >
+          <div class="flex place-content-end gap-3 p-4">
+            <app-title-icon iconName="matPsychologyOutline"></app-title-icon>
+            <h1 class="grow text-xl font-semibold">Student Details</h1>
+          </div>
+
+          <hr class="mb-4 h-[2px] w-full bg-neutral-300" />
+          <div class="mb-3 ml-6 mr-6 flex place-items-center">
+            <h3 class="grow text-base font-medium">First Name</h3>
+            <input
+              value="Franczeska"
+              type="text"
+              class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+              formControlName="accFirstName"
+            />
+          </div>
+          <div class="mb-3 ml-6 mr-6 flex place-items-center">
+            <h3 class="grow text-base font-medium">Last Name</h3>
+            <input
+              value="Silvestre"
+              type="text"
+              class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+              formControlName="accLastName"
+            />
+          </div>
+          <div class="mb-3 ml-6 mr-6 flex place-items-center">
+            <h3 class="grow text-base font-medium">Degree Code</h3>
+            <input
+              value="Franczeska"
+              type="text"
+              class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+              formControlName="accDegree"
+            />
+          </div>
+          <div class="mb-3 ml-6 mr-6 flex justify-between">
+            <div class="flex flex-col items-start">
+              <div class="flex">
+                <h3 class="text-base font-medium">
+                  Location
+                  <button
+                    type="button"
+                    (click)="toggleModal(1)"
+                    class="inline-block align-middle"
+                  >
+                    <ng-icon
+                      name="matEditOutline"
+                      size="20px"
+                      class="ml-1 mr-0 hover:text-gray-900"
+                    ></ng-icon>
+                  </button>
+                </h3>
+              </div>
+              <span
+                class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+                [ngStyle]="{
+                  display:
+                    accountForm.get('accLocCity')!.invalid && submitted
+                      ? 'block'
+                      : 'none'
+                }"
+                >Please input your location.</span
+              >
+            </div>
+            <div class="mt-1 flex w-[60%] flex-col gap-1">
+              <input
+                type="text"
+                class="w-full rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+                formControlName="accLocRegion"
+              />
+              <input
+                type="text"
+                class="w-full rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+                formControlName="accLocProvince"
+              />
+              <input
+                type="text"
+                class="w-full rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+                formControlName="accLocCity"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="mx-4 my-2 w-3/5 rounded-lg border border-gray-200 bg-gray-100 p-4 shadow"
+        *ngIf="(role | async) == 'student'"
+      >
+        <div class="flex place-content-end gap-3 p-4">
+          <app-title-icon iconName="matPsychologyOutline"></app-title-icon>
+          <h1 class="grow text-xl font-semibold">Deployment Details</h1>
+        </div>
+        <hr class="mb-4 h-[2px] w-full bg-neutral-300" />
+        <div class="mb-3 ml-6 mr-6 flex place-items-center">
+          <h3 class="grow text-base font-medium">Deployment Phase</h3>
+          <input
+            value="Franczeska"
+            type="text"
+            class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+            formControlName="accDeployment"
+          />
+        </div>
+
+        <div class="mb-3 ml-6 mr-6 flex justify-between">
+          <div class="flex flex-col items-start">
+            <h3 class="grow text-base font-medium">Primary Interest</h3>
+            <span
+              class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+              [ngStyle]="{
+                display:
+                  accountForm.get('accPrimaryInterest')!.invalid && submitted
+                    ? 'block'
+                    : 'none'
+              }"
+              >Please select a primary interest.</span
+            >
+          </div>
+          <select
+            id=""
+            class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            formControlName="accPrimaryInterest"
+            placeholder="Select chosen primary interest"
+          >
+            <option value="" disabled selected>
+              Select chosen primary interest
+            </option>
+            <option
+              *ngFor="let interest of interests"
+              [value]="interest.fieldID"
+            >
+              {{ interest.fieldName }}
+            </option>
+          </select>
+        </div>
+        <div class="mb-3 ml-6 mr-6 flex justify-between">
+          <div class="flex flex-col items-start">
+            <h3 class="grow text-base font-medium">Preferred Work-setup</h3>
+            <span
+              class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+              [ngStyle]="{
+                display:
+                  accountForm.get('accWorkSetup')!.invalid && submitted
+                    ? 'block'
+                    : 'none'
+              }"
+              >Please select your preferred work setup.</span
+            >
+          </div>
+          <select
+            id=""
+            class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            formControlName="accWorkSetup"
+            placeholder="Select preferred work setup"
+          >
+            <option value="" disabled selected>
+              Select preferred work setup
+            </option>
+            <option *ngFor="let type of workSetup" [value]="type.value">
+              {{ type.value }}
+            </option>
+          </select>
+        </div>
+        <div class="mb-3 ml-6 mr-6 flex justify-between">
+          <div class="flex flex-col items-start">
+            <h3 class="grow text-base font-medium">Preferred Job Position</h3>
+            <span
+              class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+              [ngStyle]="{
+                display:
+                  accountForm.get('accJobPosition')!.invalid && submitted
+                    ? 'block'
+                    : 'none'
+              }"
+              >Please select your preferred job position.</span
+            >
+          </div>
+          <select
+            id=""
+            class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            formControlName="accJobPosition"
+            placeholder="Select preferred work setup"
+          >
+            <option value="" disabled selected>
+              Select preferred job position
+            </option>
+            <option *ngFor="let type of jobList" [value]="type.jobID">
+              {{ type.jobTitle }}
+            </option>
+          </select>
+        </div>
+        <div class="mb-3 ml-6 mr-6 flex place-items-center">
+          <h3 class="grow text-base font-medium">Start Date</h3>
+          <input
+            type="text"
+            class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+            formControlName="accStartDate"
+          />
+        </div>
+        <div class="mb-3 ml-6 mr-6 flex place-items-center">
+          <h3 class="grow text-base font-medium">End Date</h3>
+          <input
+            type="text"
+            class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+            formControlName="accEndDate"
+          />
+        </div>
+        <div class="mb-3 ml-6 mr-6 flex place-items-center">
+          <h3 class="grow text-base font-medium">Company deployed to</h3>
+          <input
+            type="text"
+            class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+            formControlName="accCompany"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="mr-4 flex items-end justify-end"
+      *ngIf="(role | async) == 'student'"
+    >
+      <button
+        class="gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+        type="submit"
+      >
+        <p class="text-sm font-medium text-white">Save Changes</p>
+      </button>
+    </div>
+  </form>
+  <form
+    [formGroup]="turnoverForm"
+    (submit)="turnoverCoor()"
+    *ngIf="(role | async) == 'coordinator'"
+  >
+    <div
+      class="mx-2 my-2 w-2/5 rounded-lg border border-gray-200 bg-emerald-50 p-4 shadow"
+    >
+      <div class="flex place-content-end gap-3 p-4">
+        <app-title-icon iconName="matPsychologyOutline"></app-title-icon>
+        <h1 class="grow text-xl font-semibold">Coordinator Turnover</h1>
+      </div>
+      <hr class="mb-4 h-[2px] w-full bg-emerald-700" />
+      <p class="mb-6 ml-6 text-sm">
+        On the instance of turnover, enter an email that has not yet been
+        registered in the system. This will create an account and send an email
+        to the new practicum coordinator. Ensure to inform them beforehand.
+      </p>
+
+      <div class="mb-3 ml-6 mr-6 flex place-items-center">
+        <h3 class="grow text-base font-medium">Email</h3>
+        <input
+          type="text"
+          class="w-[60%] rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+          formControlName="turnoverEmail"
+        />
+      </div>
+      <span
+        class="text-warning-500 mb-4 ml-6 text-base font-medium text-red-600 dark:text-red-500"
+        [ngStyle]="{
+          display: failed && submitted ? 'block' : 'none'
+        }"
+        >Email is already registered in system.</span
+      >
+      <span
+        class="mb-4 ml-6 text-base font-medium text-emerald-600 dark:text-emerald-500"
+        [ngStyle]="{
+          display: success && submitted ? 'block' : 'none'
+        }"
+        >Registered account and sent email successfully.</span
+      >
+      <div class="mr-6 flex items-end justify-end">
+        <button
+          class="gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+          type="submit"
+        >
+          <p class="text-sm font-medium text-white">Send Email</p>
+        </button>
+      </div>
+    </div>
+  </form>
+  <!-- To add: Snackbar to show changes have been saved -->
+  <!-- MODALS -->
+  <!-- Edit Location -->
+  <app-modal
+    *ngIf="idNum === 1"
+    [isOpen]="isModalOpen"
+    (eventToggleModal)="toggleModal(1, $event)"
+  >
+    <h1 class="mb-4 grow text-center text-xl font-semibold">Edit Location</h1>
+    <form [formGroup]="locForm" (submit)="updateLocation()">
+      <div class="input-group mb-4">
+        <label
+          for="accRegion"
+          class="block text-base font-medium text-neutral-600 dark:text-white"
+          >Region
+        </label>
+        <select
+          id="accRegion"
+          class="block w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          formControlName="accRegion"
+        >
+          <option value="" disabled selected>Select region</option>
+          <option
+            *ngFor="let region of locRegions"
+            [value]="region.designation"
+          >
+            {{ region.designation }}
+          </option>
+        </select>
+      </div>
+      <div class="input-group mb-4">
+        <label
+          for="accProvince"
+          class="block text-base font-medium text-neutral-600 dark:text-white"
+          >Province
+        </label>
+        <select
+          id="accProvince"
+          class="block w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          formControlName="accProvince"
+        >
+          <option value="" disabled selected>Select province</option>
+          <option
+            *ngFor="let province of chosenProvinces"
+            [value]="province.name"
+          >
+            {{ province.name }}
+          </option>
+        </select>
+      </div>
+      <div class="input-group mb-4">
+        <label
+          for="accCity"
+          class="block text-base font-medium text-neutral-600 dark:text-white"
+          >City
+        </label>
+        <select
+          id="accCity"
+          class="block w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          formControlName="accCity"
+        >
+          <option value="" disabled selected>Select city</option>
+          <option *ngFor="let city of chosenCities" [value]="city.name">
+            {{ city.name }}
+          </option>
+        </select>
+      </div>
+      <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
+      <button
+        class="flex w-full items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+        type="submit"
+      >
+        <p class="text-xs font-medium text-white">Save</p>
+      </button>
+    </form>
+  </app-modal>
+
+  <!-- Deactivate Account Modal -->
+  <app-modal
+    *ngIf="idNum === 2"
+    [isOpen]="isModalOpen"
+    (eventToggleModal)="toggleModal(2, $event)"
+  >
+    <h1 class="mx-2 mb-4 grow text-lg font-semibold text-red-800">
+      Are you sure you want to deactivate your account?
+    </h1>
+    <p class="mx-2 text-sm">
+      By deactivating your account, you will lose access to the system. This
+      action cannot be undone.
+    </p>
+    <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
+    <button
+      class="flex w-full items-center justify-center gap-3 rounded bg-red-700 px-6 py-2 hover:bg-red-600 dark:bg-red-700 dark:hover:bg-red-600"
+      (click)="deleteAccount()"
+    >
+      <p class="text-xs font-medium text-white">Confirm Deactivation</p>
+    </button>
+  </app-modal>
+</app-main-template>
+<app-loading></app-loading>

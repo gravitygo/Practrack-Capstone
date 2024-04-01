@@ -1,0 +1,28 @@
+<div *ngIf="isOpen" class="fixed inset-0 flex items-center justify-center">
+  <div
+    class="absolute inset-0 z-40 h-full w-full bg-gray-800 opacity-50"
+    (click)="closeModal()"
+  ></div>
+
+  <div class="z-50 w-2/5 rounded-lg bg-white shadow-lg">
+    <!-- header -->
+    <div class="flex place-content-end gap-3 p-4">
+      <div *ngIf="hasHeader" class="flex flex-grow gap-4">
+        <app-title-icon iconName="matDashboardOutline"></app-title-icon>
+        <h1 class="grow text-xl font-semibold">{{ headerName }}</h1>
+      </div>
+      <button (click)="closeModal()" class="flex text-black">
+        <ng-icon
+          size="1.5rem"
+          name="matCancelOutline"
+          class="hover:text-neutral-700"
+        ></ng-icon>
+      </button>
+    </div>
+    <hr />
+
+    <div class="max-h-[50vh] overflow-y-auto p-4">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>

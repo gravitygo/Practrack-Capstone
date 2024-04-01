@@ -1,0 +1,78 @@
+<app-auth-template>
+  <div class="flex shrink flex-col gap-16 px-40 py-8">
+    <div class="flex items-center justify-end gap-2">
+      <p class="text-emerald-600 dark:text-emerald-500">No account yet?</p>
+      <a routerLink="/signup">
+        <button
+          class="group flex items-center justify-center gap-3 rounded border border-emerald-600 px-3 py-2 hover:bg-emerald-600 dark:border-emerald-500 dark:hover:bg-emerald-500"
+          type="submit"
+        >
+          <ng-icon
+            name="matPersonAddAltOutline"
+            size="12px"
+            class="mr-0 text-emerald-600 group-hover:text-white dark:text-emerald-500"
+          ></ng-icon>
+          <p
+            class="text-xs font-medium text-emerald-600 group-hover:text-white dark:text-emerald-500"
+          >
+            Sign Up
+          </p>
+        </button>
+      </a>
+    </div>
+    <div>
+      <h1 class="text-3xl font-medium">Welcome back</h1>
+    </div>
+    <form
+      class="flex flex-col gap-4"
+      [formGroup]="loginForm"
+      (submit)="onSubmit()"
+    >
+      <p
+        class="text-red-600 dark:text-red-500"
+        [ngStyle]="{
+          display: submitted ? 'block' : 'none'
+        }"
+      >
+        Incorrect Credentials.
+      </p>
+      <div clas="input-group">
+        <h4 class="text-base font-medium text-neutral-600">DLSU Email</h4>
+        <input
+          placeholder="DLSU Email"
+          type="text"
+          formControlName="dlsuEmail"
+          class="w-[28.125rem] rounded border-[1px] border-neutral-500 px-3 py-2 text-xs"
+        />
+      </div>
+      <div clas="input-group">
+        <h4 class="text-base font-medium text-neutral-600">Password</h4>
+        <input
+          placeholder="Password"
+          type="password"
+          formControlName="password"
+          class="w-[28.125rem] rounded border-[1px] border-neutral-500 px-3 py-2 text-xs"
+        />
+      </div>
+      <a
+        [routerLink]="'forgotPassword'"
+        class="text-sm font-medium text-emerald-600"
+        >Forgot password?
+      </a>
+      <div class="submit-form">
+        <button
+          class="flex items-center justify-center gap-3 rounded bg-emerald-600 px-8 py-4 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
+          type="submit"
+        >
+          <ng-icon
+            name="matLoginOutline"
+            size="12px"
+            class="mr-0 text-white"
+          ></ng-icon>
+          <p class="text-xs font-medium text-white">Log In</p>
+        </button>
+      </div>
+    </form>
+  </div>
+</app-auth-template>
+<app-loading></app-loading>

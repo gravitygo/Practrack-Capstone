@@ -1,0 +1,63 @@
+<div
+  class="flex h-full flex-col rounded-lg border border-gray-200 bg-white p-4 shadow"
+>
+  <h1 class="text-2xl">
+    {{ chatName }}
+  </h1>
+  <hr class="mb-6 mt-2 h-[1px] w-full bg-neutral-300" />
+  <div
+    #messageViewer
+    class="flex h-[50vh] max-h-[50vh] flex-col-reverse gap-3 overflow-y-scroll"
+  >
+    <div
+      *ngFor="let message of messagesList"
+      class="flex"
+      [ngClass]="
+        message.sender == currentUser ? 'justify-end' : 'justify-start'
+      "
+    >
+      <p
+        class="max-w-[50%] rounded px-5 py-2"
+        [ngClass]="
+          message.sender == currentUser
+            ? 'rounded-br-none bg-lime-500'
+            : 'rounded-bl-none bg-neutral-200'
+        "
+      >
+        {{ message.message }}
+      </p>
+    </div>
+  </div>
+  <hr class="mb-6 mt-2 h-[1px] w-full bg-neutral-300" />
+  <div class="grow">
+    <form [formGroup]="chat" (submit)="submitMessage()">
+      <label for="chat" class="sr-only">Your message</label>
+      <div class="flex items-center">
+        <textarea
+          id="chat"
+          rows="5"
+          class="mx-4 block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          placeholder="Your message..."
+          formControlName="message"
+        ></textarea>
+        <button
+          type="submit"
+          class="inline-flex cursor-pointer justify-center rounded-full p-2 text-blue-600 hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600"
+        >
+          <svg
+            class="h-5 w-5 rotate-90 rtl:-rotate-90"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="currentColor"
+            viewBox="0 0 18 20"
+          >
+            <path
+              d="m17.914 18.594-8-18a1 1 0 0 0-1.828 0l-8 18a1 1 0 0 0 1.157 1.376L8 18.281V9a1 1 0 0 1 2 0v9.281l6.758 1.689a1 1 0 0 0 1.156-1.376Z"
+            />
+          </svg>
+          <span class="sr-only">Send message</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

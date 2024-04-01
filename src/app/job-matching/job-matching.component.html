@@ -1,0 +1,81 @@
+<app-main-template>
+  <div class="flex w-full justify-between">
+    <h1 class="text-3xl">Job Matching</h1>
+    <label for="table-search" class="sr-only">Filter</label>
+    <div class="flex items-center px-2">
+      <div class="relative mr-2">
+        <div
+          class="rtl:inset-r-0 pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3"
+        >
+          <ng-icon
+            name="matFilterAltOutline"
+            size="20px"
+            class="mr-0 text-gray-400"
+          ></ng-icon>
+        </div>
+        <input
+          type="text"
+          id="company-search"
+          class="block w-60 rounded-lg border border-gray-300 bg-gray-50 ps-10 pt-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          placeholder="Filter"
+        />
+      </div>
+    </div>
+  </div>
+  <span
+    >Disclaimer: Only companies which have been evaluated & can be found within
+    the company list can be recommended here.</span
+  >
+  <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
+
+  <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <table
+      class="w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
+    >
+      <thead
+        class="text-md bg-neutral-100 text-center text-neutral-800 dark:bg-gray-700 dark:text-gray-400"
+      >
+        <tr>
+          <th scope="col" class="px-6 py-3">Student Name</th>
+          <th scope="col" class="px-6 py-3">Primary Interest</th>
+          <th scope="col" class="px-6 py-3">Recommended Company</th>
+          <th scope="col" class="px-6 py-3">Recommendation Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let student of studentDB"
+          class="border-b bg-white text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+        >
+          <th
+            scope="row"
+            class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+          >
+            <button type="button" (click)="viewDetails(student.studentID)">
+              {{ student.firstName }} {{ student.lastName }}
+            </button>
+          </th>
+          <td class="px-6 py-4" *ngIf="student.fieldName != null">
+            {{ student.fieldName }}
+          </td>
+          <td class="px-6 py-4 text-gray-400" *ngIf="student.fieldName == null">
+            No interest set
+          </td>
+          <td class="px-6 py-4" *ngIf="student.fieldName != null">
+            {{ student.recCompany }}
+          </td>
+          <td class="px-6 py-4 text-gray-400" *ngIf="student.fieldName == null">
+            N/A
+          </td>
+          <td class="px-6 py-4" *ngIf="student.fieldName != null">
+            {{ student.companyRate }}%
+          </td>
+          <td class="px-6 py-4 text-gray-400" *ngIf="student.fieldName == null">
+            N/A
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</app-main-template>
+<app-loading></app-loading>

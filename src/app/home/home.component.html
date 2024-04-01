@@ -1,0 +1,9 @@
+<app-main-template>
+  <div class="flex w-full justify-between">
+    <h1 class="text-3xl">Home</h1>
+  </div>
+  <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
+  <app-home-coor *ngIf="(role | async) == 'coordinator'"></app-home-coor>
+  <app-home-student *ngIf="(role | async) == 'student'"></app-home-student>
+</app-main-template>
+<app-loading></app-loading>
