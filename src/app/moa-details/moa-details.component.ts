@@ -27,15 +27,11 @@ export class MoaDetailsComponent {
     private moadssServ: MoadssService,
     private loadingService: LoadingService,
     private route: ActivatedRoute
-  ) {
-    console.log('IN MOA DETAILS COMPONENT=========================');
-  }
+  ) {}
 
   ngOnInit(): void {
     this.coorID = this.userLogged.currentUser?.uid!;
-    console.log('COOR ID: ' + this.coorID);
     this.companyParam = this.route.snapshot.paramMap.get('company');
-    console.log('THIS COMPANY: ' + this.companyParam);
     this.getRow(this.coorID, this.companyParam);
   }
 
@@ -59,7 +55,6 @@ export class MoaDetailsComponent {
         }
         this.radarData.push(set1);
       }
-      console.log(this.radarData);
 
       for (let i = 0; i < 3; i++) {
         var set2 = [];
@@ -68,15 +63,6 @@ export class MoaDetailsComponent {
         }
         this.barData.push(set2);
       }
-      /*
-      console.log('GETROW=======================');
-      console.log(this.company);
-      console.log(this.companyDB);
-      console.log(this.surveyCounts);
-      console.log(this.data);
-      console.log(this.radarData);
-      console.log(this.barData);
-*/
       this.loadingService.hideLoading();
     });
   }

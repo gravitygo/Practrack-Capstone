@@ -12,6 +12,7 @@ import { LoadingService } from 'src/app/services/loading.service';
 import { NgxExtendedPdfViewerService } from 'ngx-extended-pdf-viewer';
 import { DocumentService } from 'src/app/services/document.service';
 import { ManifestService } from 'src/app/services/manifest.service';
+import { SnackbarService } from 'src/app/services/snackbar.service';
 @Component({
   selector: 'app-submission-detailed',
   templateUrl: './submission-detailed.component.html',
@@ -34,7 +35,8 @@ export class SubmissionDetailedComponent {
     private breadcrumbService: BreadcrumbService,
     private documentService: DocumentService,
     private loadingService: LoadingService,
-    private manifestService: ManifestService
+    private manifestService: ManifestService,
+    private snack: SnackbarService
   ) {
     this.loadingService.showLoading();
     this.documentService.getDocument(parseInt(this.id!)).subscribe((res) => {
@@ -76,7 +78,6 @@ export class SubmissionDetailedComponent {
     this.loadingService.showLoading();
     const pdfBlob: Blob = await this.pdfViewer.getCurrentDocumentAsBlob();
     if (!pdfBlob.size) return;
-    console.log(pdfBlob);
 
     this.documentService
       .patchSubmittedDocument(parseInt(this.id!))
@@ -92,6 +93,11 @@ export class SubmissionDetailedComponent {
           this.router.navigate([`/documentHub/resubmit/${parseInt(this.id!)}`]);
           this.loadingService.hideLoading();
         });
+        this.snack.openSnackBar(
+          'Requirement has been submitted successfully.',
+          '',
+          'Success'
+        );
       });
   }
 }

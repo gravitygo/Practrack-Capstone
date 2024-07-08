@@ -12,7 +12,17 @@
       <th scope="col" class="px-6 py-3">Status</th>
     </tr>
   </thead>
-  <tbody>
+
+  <tbody *ngIf="documentRequirements.length == 0">
+    <tr
+      class="border-b bg-white text-center dark:border-gray-700 dark:bg-gray-800"
+    >
+      <td colspan="5" class="p-16 text-lg text-gray-500">
+        There are no published requirements for your batch yet.
+      </td>
+    </tr>
+  </tbody>
+  <tbody *ngIf="documentRequirements.length > 0">
     <tr
       class="cursor-pointer border-b text-center dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
       [ngClass]="
@@ -22,9 +32,9 @@
       "
       *ngFor="let rows of documentRequirements; index as i"
       [routerLink]="
-        rows.documentID
-          ? '../resubmit/' + rows.documentID
-          : '../submit/' + rows.requirementId + '/' + rows.acadTermFileId
+        rows.isFileSubmission
+          ? '../submit/' + rows.requirementId + '/' + rows.acadTermFileId
+          : '../dtr/' + rows.requirementId
       "
     >
       <th
@@ -37,10 +47,14 @@
         {{ rows.version ?? '-' }}
       </td>
       <td class="px-6 py-4">
-        {{ rows.dueDate ?? '-' }}
+        {{ rows.dueDate ? (rows.dueDate | date: 'MM/dd/yyyy') : '-' }}
       </td>
       <td class="px-6 py-4">
-        {{ rows.submittedOn ? (rows.submittedOn | date: 'MM/dd/yyyy') : '-' }}
+        {{
+          rows.submittedOn
+            ? (rows.submittedOn | date: 'MM/dd/yyyy h:mm a')
+            : '-'
+        }}
       </td>
       <td class="px-6 py-4">
         <div

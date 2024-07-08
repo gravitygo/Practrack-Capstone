@@ -2,8 +2,8 @@
   <a
     [routerLink]="'/' + name"
     routerLinkActive="active"
-    [class]="{ 'p-2': shortNav, 'px-3': !shortNav, 'py-2': !shortNav }"
-    class="flex items-center rounded group-hover:bg-neutral-300"
+    [ngClass]="{ 'pl-2 pr-0': shortNav, 'px-3': !shortNav }"
+    class="flex items-center rounded py-2 group-hover:bg-neutral-300"
     [href]="'/' + link"
   >
     <ng-icon
@@ -13,14 +13,30 @@
       [class.w-12]="shortNav"
       [class.mr-3]="!shortNav"
       class="mr-0 font-light"
+      [ngClass]="{
+        'basis-[10%]': !shortNav
+      }"
     ></ng-icon>
     <p
       [class.opacity-100]="!shortNav"
       [class.w-32]="!shortNav"
       class="w-0 font-medium capitalize text-neutral-500 opacity-0"
+      [ngClass]="{
+        'basis-[80%]': !shortNav
+      }"
       [class.text-neutral-900]="active"
     >
       {{ name }}
     </p>
+    <div
+      *ngIf="notif > 0"
+      [ngClass]="{
+        'basis-[10%]': !shortNav,
+        'relative -left-4 -top-4': shortNav
+      }"
+      class="inline-flex h-auto w-auto rounded-full bg-red-500 px-2 py-0 font-medium text-white"
+    >
+      {{ notif }}
+    </div>
   </a>
 </li>

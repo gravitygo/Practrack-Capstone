@@ -13,10 +13,18 @@ import { KeyValue } from '../../../model/manifest.model';
 import { ManifestService } from '../../../services/manifest.service';
 import { LoadingService } from '../../../services/loading.service';
 import { DocumentService } from '../../../services/document.service';
-import { FormArray, FormBuilder, Validators } from '@angular/forms';
+import {
+  FormArray,
+  FormBuilder,
+  Validators,
+  FormControl,
+} from '@angular/forms';
 import { AccountService } from '../../../services/account.service';
 import { BehaviorSubject } from 'rxjs';
 import { Storage, ref, uploadBytesResumable } from '@angular/fire/storage';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { SnackbarService } from '../../../services/snackbar.service';
+
 @Component({
   selector: 'app-requirements',
   templateUrl: './requirements.component.html',
@@ -42,10 +50,24 @@ export class RequirementsComponent {
   currentAcadFileId?: number = 0;
   currentDocument?: number = 0;
   currentBatch: number = 0;
+  currentFileSubmission: boolean = false;
   requirements: any[] = [];
   feedback: string = 'a feedback';
   fileValue: Blob | null = null;
   inputHtml: HTMLInputElement | null = null;
+  submitted = false;
+
+  // Paginator ViewChild
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  // Paginator Variables
+  pageSize = 10;
+  pageSizeOptions = [5, 10, 20, 50];
+
+  // SEARCH FILTER FUNCTION
+  searchText: string = '';
+  filteredRequirements: any[] = [];
+
   students: {
     id: string;
     startDate: string;
@@ -79,7 +101,9 @@ export class RequirementsComponent {
 
   fileRequirement = this.fb.group({
     date: [''],
-    phase: ['', [Validators.required]],
+    phase: [''],
+    fileSubmission: new FormControl<boolean | null>(false),
+    docuName: [''],
   });
 
   oulcDocument = this.fb.group({
@@ -97,40 +121,90 @@ export class RequirementsComponent {
     private loadingService: LoadingService,
     private documentService: DocumentService,
     private accountService: AccountService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private snack: SnackbarService
   ) {
     this.loadingService.showLoading();
     this.manifestService.getOptions('ojtPhase').subscribe((phases) => {
       this.ojtPhases = phases;
     });
-
     this.manifestService.getOptions('academicTerm').subscribe((keyValues) => {
-      this.academicTerm = keyValues;
+      this.academicTerm = keyValues.reverse();
       if (this.academicTerm[0]?.id) {
         this.documentService
           .getDocumentList(this.academicTerm[0]?.id)
           .subscribe((value) => {
             this.currentBatch = this.academicTerm[0]!.id!;
+
             this.requirements = value.documents;
+            this.filteredRequirements = this.requirements.slice();
+            this.filterData();
           });
       }
       this.loadingService.hideLoading();
     });
   }
 
+  ngOnChanges(): void {
+    this.filterData();
+  }
+
+  getVisibleIndices(): number[] {
+    const startIndex = this.paginator?.pageIndex * this.paginator?.pageSize;
+    const endIndex = startIndex + this.paginator?.pageSize;
+    return Array.from(
+      { length: this.filteredRequirements.length },
+      (_, index) => index
+    ).slice(startIndex, endIndex);
+  }
+
+  filterData(): void {
+    const searchKeys = ['requirement', 'phase', 'dueOn'];
+    if (!this.searchText) {
+      this.filteredRequirements = this.requirements.slice();
+    } else {
+      this.filteredRequirements = this.requirements.filter((requirement) =>
+        searchKeys.some(
+          (key) =>
+            requirement[key]
+              ?.toString()
+              .toLowerCase()
+              .includes(this.searchText.toLowerCase())
+        )
+      );
+    }
+  }
+
+  viewRequirements(batchID: number) {
+    this.loadingService.showLoading();
+    this.documentService.getDocumentList(batchID).subscribe((value) => {
+      this.currentBatch = batchID;
+
+      this.requirements = value.documents;
+      this.filteredRequirements = this.requirements.slice();
+      this.filterData();
+      this.loadingService.hideLoading();
+    });
+  }
+
   setRequirementValues(
+    requirement: string,
     currentOjtPhase: number,
     date: string,
     currentDocumentType: number,
+    isFileSubmission: boolean,
     currentAcadFileId?: number
   ) {
     this.currentDocumentType = currentDocumentType;
     this.currentAcadFileId = currentAcadFileId;
     this.currentOjtPhase = currentOjtPhase;
-    console.log(this.currentOjtPhase);
+    this.currentFileSubmission = isFileSubmission;
+
     this.fileRequirement = this.fb.group({
       date: { value: `${date}`, disabled: false },
       phase: { value: `${currentOjtPhase}`, disabled: false },
+      fileSubmission: { value: !isFileSubmission, disabled: false },
+      docuName: { value: `${requirement}`, disabled: false },
     });
   }
 
@@ -146,6 +220,8 @@ export class RequirementsComponent {
       .getDocumentList(this.currentBatch)
       .subscribe((value) => {
         this.requirements = value.documents;
+        this.filteredRequirements = this.requirements.slice();
+        this.filterData();
 
         this.loadingService.hideLoading();
       });
@@ -162,7 +238,17 @@ export class RequirementsComponent {
     this.documentService
       .patchEnabled(id, isChecked.target.checked)
       .subscribe(() => {
+        this.viewRequirements(this.currentBatch);
         this.loadingService.hideLoading();
+        if (isChecked.target.checked) {
+          this.snack.openSnackBar(
+            'Requirement is now published.',
+            '',
+            'Success'
+          );
+        } else {
+          this.snack.openSnackBar('Requirement is now hidden.', '', 'Info');
+        }
       });
   }
 
@@ -173,12 +259,19 @@ export class RequirementsComponent {
         .addNewLookup(this.addFileRequirement.value.name!, 'documentType')
         .subscribe(() => {
           this.changeList(`${this.currentBatch}`);
+          this.toggleModal(1, false);
+          this.snack.openSnackBar(
+            'Requirement added successfully.',
+            '',
+            'Success'
+          );
         });
     }
     this.loadingService.hideLoading();
   }
 
   updateAcadFile() {
+    this.submitted = true;
     if (!this.fileRequirement.pristine || this.fileValue) {
       this.loadingService.showLoading();
       if (
@@ -186,40 +279,64 @@ export class RequirementsComponent {
         this.currentAcadFileId === null
       ) {
         if (this.fileRequirement.value.phase !== 'null' && this.fileValue) {
-          this.documentService
-            .insertFile(
-              this.currentBatch,
-              Number(this.fileRequirement.value!.phase),
-              this.currentDocumentType!,
-              this.fileRequirement.value.date
-            )
-            .subscribe((val) => {
-              this.changeList(`${this.currentBatch}`);
-              this.uploadFile(val.id);
-              this.loadingService.hideLoading();
-              return;
-            });
+          if (this.fileRequirement.valid) {
+            this.documentService
+              .insertFile(
+                this.currentBatch,
+                Number(this.fileRequirement.value!.phase),
+                this.currentDocumentType!,
+                this.fileRequirement.value.date
+              )
+              .subscribe((val) => {
+                this.changeList(`${this.currentBatch}`);
+                this.uploadFile(val.id);
+                this.loadingService.hideLoading();
+                this.snack.openSnackBar(
+                  'Requirement succesfully edited.',
+                  '',
+                  'Success'
+                );
+
+                this.toggleModal(4);
+
+                return;
+              });
+          } else {
+            this.loadingService.hideLoading();
+            return;
+          }
         } else {
           this.loadingService.hideLoading();
           return;
         }
       } else {
-        this.documentService
-          .patchDocument(
-            this.currentAcadFileId,
-            this.fileRequirement.value.date!,
-            this.fileRequirement.value.phase!
-          )
-          .subscribe(() => {
-            this.changeList(`${this.currentBatch}`);
-            console.log(this.fileValue);
-            if (this.fileValue) this.uploadFile(this.currentAcadFileId!);
+        if (this.fileRequirement.valid) {
+          this.documentService
+            .patchDocument(
+              this.currentAcadFileId,
+              this.fileRequirement.value.date!,
+              this.fileRequirement.value.phase!,
+              !this.fileRequirement.value.fileSubmission!,
+              this.fileRequirement.value.docuName!
+            )
+            .subscribe(() => {
+              this.changeList(`${this.currentBatch}`);
+              if (this.fileValue) this.uploadFile(this.currentAcadFileId!);
 
-            this.loadingService.hideLoading();
-          });
+              this.loadingService.hideLoading();
+              this.snack.openSnackBar(
+                'Requirement succesfully edited.',
+                '',
+                'Success'
+              );
+              this.toggleModal(4);
+            });
+        } else {
+          this.loadingService.hideLoading();
+          return;
+        }
       }
     }
-    this.toggleModal(4);
   }
 
   toggleModal(idNum: number, isModalOpen?: boolean, editName?: string) {

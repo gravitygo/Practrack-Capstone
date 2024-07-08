@@ -5,4 +5,5 @@ export interface Account {
   addrCity: string;
   workSetup: string;
   jobPosition: string;
+  allowance: number;
 }

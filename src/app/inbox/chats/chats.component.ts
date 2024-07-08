@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
-import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-chats',
@@ -19,7 +18,19 @@ export class ChatsComponent {
     });
   }
 
-  changeChat(id: string, name: string) {
-    this.chatEvent.emit({ id: id, name: name });
+  changeChat(
+    id: string,
+    name: string,
+    isGroup: boolean,
+    isRead: boolean,
+    isActive: boolean
+  ) {
+    this.chatEvent.emit({
+      id: id,
+      name: name,
+      isGroup: isGroup,
+      isRead: isRead,
+      isActive: isActive,
+    });
   }
 }

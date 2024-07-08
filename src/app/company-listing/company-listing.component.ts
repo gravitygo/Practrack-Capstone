@@ -18,9 +18,12 @@ import { CompanyListingService } from '../services/company-listing.service';
 import { JobMatchingService } from '../services/job-matching.service';
 import { Auth } from '@angular/fire/auth';
 import { LoadingService } from '../services/loading.service';
+import { SupabaseService } from '../services/supabase.service';
 import { regions, provinces, municipalities } from 'psgc';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { BehaviorSubject } from 'rxjs';
+import { valueOrDefault } from 'chart.js/dist/helpers/helpers.core';
+import { SnackbarService } from '../services/snackbar.service';
 
 @Component({
   selector: 'app-company-listing',
@@ -59,7 +62,7 @@ export class CompanyListingComponent implements OnInit {
   // Job Matching Variables
   companySheets: any;
   companyDB: any;
-  defaultWeights: any[] = [0.2083, 0.1667, 0.1667, 0.125, 0.125, 0.2083];
+  defaultWeights: any[] = [0.1, 0.13, 0.12, 0.14, 0.15, 0.2, 0.16];
   companiesScores: { [key: string]: any } = {};
   studentsCompanyScores: { [key: string]: any } = {};
   companyScore: any[] = [];
@@ -72,33 +75,38 @@ export class CompanyListingComponent implements OnInit {
 
   // Paginator Variables
   pageSize = 10;
-  currentPage = 0;
-
-  // Handle Page Event for Pagination
-  handlePageEvent(pageEvent: PageEvent): void {
-    this.currentPage = pageEvent.pageIndex;
-    this.paginateData();
-  }
+  pageSizeOptions = [5, 10, 20, 50];
 
   addForm: FormGroup = this.fb.group({
-    addName: [''],
-    addAddress: [''],
-    addRegion: [''],
-    addProvince: { value: '', disabled: true },
-    addCity: { value: '', disabled: true },
-    addNature: [''],
-    addEndDate: [''],
+    addName: ['', Validators.required],
+    addAddress: ['', Validators.required],
+    addRegion: ['', Validators.required],
+    addProvince: { value: '', disabled: true, required: true },
+    addCity: { value: '', disabled: true, required: true },
+    addNature: ['', Validators.required],
+    addEndDate: ['', Validators.required],
+    addAllowance: [false],
     addContacts: this.fb.array([]),
     addJobs: this.fb.array([]),
-    addWorkSetup: [''],
+    addWorkSetup: ['', Validators.required],
+  });
+
+  deleteForm: FormGroup = this.fb.group({
+    deleteCompany: { value: '', disabled: true },
+    deleteAddress: { value: '', disabled: true },
+    deleteEndDate: { value: '', disabled: true },
   });
 
   // SEARCH variable for Searchtext
   searchText: any;
   filteredCompanyListing: any[] = [];
-
   allCompanyListing: any[] = [];
-  paginatedCompanyListing: any[] = [];
+
+  submitted = false;
+
+  activeStudents: any[] = [];
+  activeChats: any[] = [];
+  companyToDelete: string = '';
 
   //Constructor for companyListingService
   constructor(
@@ -106,22 +114,24 @@ export class CompanyListingComponent implements OnInit {
     private companyListingServ: CompanyListingService,
     private router: Router,
     private loadingService: LoadingService,
+    private supabaseService: SupabaseService,
     private jobServ: JobMatchingService,
     private elRef: ElementRef, // constructor for hover
-    private renderer: Renderer2 // constructor for hover
+    private renderer: Renderer2, // constructor for hover,
+    private snack: SnackbarService
   ) {
     this.editForm = this.fb.group({
-      editName: [''],
-      editAddress: [''],
-      editRegion: [''],
-      editProvince: [''],
-      editCity: [''],
+      editName: ['', Validators.required],
+      editAddress: ['', Validators.required],
+      editRegion: ['', Validators.required],
+      editProvince: { value: '', disabled: true, required: true },
+      editCity: { value: '', disabled: true, required: true },
       editNature: [''],
       editEndDate: [''],
+      editAllowance: [''],
       editContacts: this.fb.array([]),
       editJobs: this.fb.array([]),
-      deleteCheckbox: [false],
-      editWorkSetup: [''],
+      editWorkSetup: ['', Validators.required],
     });
     this.auth.currentUser?.getIdTokenResult(true).then((token) => {
       this.role.next(token.claims['role'] as string);
@@ -132,26 +142,28 @@ export class CompanyListingComponent implements OnInit {
     this.userID = this.userLogged.currentUser?.uid!;
     this.viewCompanyList(this.userID);
 
-    this.filterData();
-    this.paginateData();
+    // LISTENER
+    this.supabaseService.getCompanies().subscribe(() => {
+      this.viewCompanyList(this.userID);
+    });
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0]; // Extract date part in 'YYYY-MM-DD' format
   }
 
   toggleRowExpansion(companylist: any): void {
     companylist.expanded = !companylist.expanded;
-    this.paginatedCompanyListing.forEach((item) => {
+
+    /*
+    // Limit expansion to one row at a time
+    this.filteredCompanyListing.forEach((item) => {
       if (item !== companylist) {
         item.expanded = false;
       }
     });
-  }
-
-  paginateData(): void {
-    const startIndex = this.currentPage * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.paginatedCompanyListing = this.filteredCompanyListing.slice(
-      startIndex,
-      endIndex
-    );
+    */
   }
 
   // SEARCH Filter function
@@ -159,13 +171,46 @@ export class CompanyListingComponent implements OnInit {
     if (!this.searchText) {
       this.filteredCompanyListing = this.allCompanyListing.slice();
     } else {
-      this.filteredCompanyListing = this.allCompanyListing.filter((company) =>
-        JSON.stringify(company)
+      this.filteredCompanyListing = this.allCompanyListing.filter((company) => {
+        const cleanedCompany = this.removeExcludedKeys(company);
+        return JSON.stringify(cleanedCompany)
           .toLowerCase()
-          .includes(this.searchText.toLowerCase())
-      );
+          .includes(this.searchText.toLowerCase());
+      });
     }
-    this.paginateData();
+  }
+
+  // Removes unnecessary keys for search filter
+  removeExcludedKeys(company: any): any {
+    const cleanedCompany: any = {};
+    const excludedKeys: string[] = [
+      'companyID',
+      'createdBy',
+      'lastEditedBy',
+      'dateCreated',
+      'dateLastEdited',
+      'dssAveRating',
+      'effectivityEndDate',
+      'hasAllowance',
+      'isActivePartner',
+      'natureOfCompany',
+      'workSetup',
+    ];
+
+    for (const key in company) {
+      if (!excludedKeys.includes(key)) {
+        if (
+          typeof company[key] === 'object' &&
+          !Array.isArray(company[key]) &&
+          company[key] !== null
+        ) {
+          cleanedCompany[key] = this.removeExcludedKeys(company[key]);
+        } else {
+          cleanedCompany[key] = company[key];
+        }
+      }
+    }
+    return cleanedCompany;
   }
 
   // Changes when Search is initiated
@@ -173,22 +218,16 @@ export class CompanyListingComponent implements OnInit {
     this.filterData();
   }
 
-
   // Modal Logic for HTML
   toggleModal(idNum: number, isModalOpen?: boolean, companyID?: number) {
     if (isModalOpen != null) this.isModalOpen = isModalOpen;
     else this.isModalOpen = !this.isModalOpen;
     this.idNum = idNum;
+
     if (companyID !== undefined) {
       this.companyID = companyID;
-      console.log('companyID: ', this.companyID);
-      if (idNum === 2) {
-        this.viewCompanyModal(companyID);
-      }
-    } else {
-      console.log('Company ID is undefined');
+      this.viewCompanyModal(companyID);
     }
-    console.log(this.isModalOpen);
 
     if (idNum == 1) {
       this.countContact = 0;
@@ -212,7 +251,6 @@ export class CompanyListingComponent implements OnInit {
         }
       });
       this.addForm.get('addProvince')?.valueChanges.subscribe((x) => {
-        // console.log(this.chosenProvinces);
         var province = this.addForm.get('addProvince')?.value!;
         if (province !== '') {
           this.chosenCities = [];
@@ -257,16 +295,13 @@ export class CompanyListingComponent implements OnInit {
           this.editForm.get('editCity')?.enable();
         }
       });
+    } else if (idNum == 4) {
+      this.loadingService.hideLoading();
     }
   }
 
   // ADD Company in Forms
   addCompany() {
-    console.log('-------------------------');
-    this.paginatedCompanyListing.forEach((element) => {
-      console.log(element);
-    });
-
     var contactArray: { [key: string]: any } = {};
     var dataPhone: { [key: string]: any } = {};
     var dataEmail: { [key: string]: any } = {};
@@ -282,7 +317,6 @@ export class CompanyListingComponent implements OnInit {
     dataPhone[key2] = [];
     dataEmail[key3] = [];
     dataWebsite[key4] = [];
-    this.clearFormArray(this.jobs);
 
     this.selectedContact.forEach((contact, index) => {
       if (contact === 'phone') {
@@ -300,38 +334,75 @@ export class CompanyListingComponent implements OnInit {
     contactArray[key1].push(dataEmail);
     contactArray[key1].push(dataWebsite);
 
-    console.log('=================== FINAL DATA ===========');
-    console.log(contactArray);
-    console.log(this.addForm.get('addJobs')?.value);
-
+    this.submitted = true;
     try {
-      this.companyListingServ
-        .addCompanyListing({
-          companyName: this.addForm.value['addName']!,
-          companyAddress: this.addForm.value['addAddress']!,
-          natureOfCompany: this.addForm.value['addNature']!,
-          effectivityEndDate: this.addForm.value['addEndDate']
-            ? new Date(this.addForm.value['addEndDate'])
-            : new Date(),
-          pointOfContact: contactArray,
-          isActivePartner: true,
-          createdBy: this.userLogged.currentUser?.uid!,
-          addrRegion: this.addForm.get('addRegion')?.value!,
-          addrProvince: this.addForm.get('addProvince')?.value!,
-          addrCity: this.addForm.get('addCity')?.value!,
-          jobPositions: this.addForm.get('addJobs')?.value!,
-          workSetup: this.addForm.get('addWorkSetup')?.value!,
-        })
-        .subscribe(() => {
-          this.router.navigate(['companylisting']);
+      if (this.addForm.valid) {
+        var contactArray: { [key: string]: any } = {};
+        var dataPhone: { [key: string]: any } = {};
+        var dataEmail: { [key: string]: any } = {};
+        var dataWebsite: { [key: string]: any } = {};
+        var contactData;
+
+        var key1 = 'contacts';
+        var key2 = 'phone';
+        var key3 = 'email';
+        var key4 = 'website';
+
+        contactArray[key1] = [];
+        dataPhone[key2] = [];
+        dataEmail[key3] = [];
+        dataWebsite[key4] = [];
+
+        this.selectedContact.forEach((contact, index) => {
+          if (contact === 'phone') {
+            contactData = this.addForm.get('addContacts')?.value.at(index);
+            dataPhone[key2].push(contactData);
+          } else if (contact === 'email') {
+            (contactData = this.addForm.get('addContacts')?.value.at(index)),
+              dataEmail[key3].push(contactData);
+          } else if (contact === 'website') {
+            (contactData = this.addForm.get('addContacts')?.value.at(index)),
+              dataWebsite[key4].push(contactData);
+          }
         });
-      this.addForm.reset(); //resets the forms
-      this.toggleModal(1, false); //removes the modal
-      this.loadingService.showLoading(); //shows loading icon
-      this.viewCompanyList(this.userID);
-      this.selectedContact = [];
+        contactArray[key1].push(dataPhone);
+        contactArray[key1].push(dataEmail);
+        contactArray[key1].push(dataWebsite);
+
+        try {
+          this.companyListingServ
+            .addCompanyListing({
+              companyName: this.addForm.value['addName']!,
+              companyAddress: this.addForm.value['addAddress']!,
+              natureOfCompany: this.addForm.value['addNature']!,
+              effectivityEndDate: this.addForm.value['addEndDate'],
+              hasAllowance: this.addForm.value['addAllowance']!,
+              pointOfContact: contactArray,
+              isActivePartner: true,
+              createdBy: this.userLogged.currentUser?.uid!,
+              addrRegion: this.addForm.get('addRegion')?.value!,
+              addrProvince: this.addForm.get('addProvince')?.value!,
+              addrCity: this.addForm.get('addCity')?.value!,
+              jobPositions: this.addForm.get('addJobs')?.value!,
+              workSetup: this.addForm.get('addWorkSetup')?.value!,
+            })
+            .subscribe(() => {
+              this.addForm.reset(); //resets the forms
+              this.toggleModal(1, false); //removes the modal
+              this.selectedContact = [];
+              this.snack.openSnackBar(
+                'Company has been added successfully.',
+                '',
+                'Success'
+              );
+              this.viewCompanyList(this.userID);
+            });
+        } catch (err) {
+          console.error(err);
+        }
+      }
     } catch (err) {
-      console.log('Error: ', err);
+      console.error(err);
     }
   }
 
@@ -339,24 +410,18 @@ export class CompanyListingComponent implements OnInit {
   viewCompanyModal(companyID: number) {
     try {
       this.companyListingServ.viewCompanyModal(companyID).subscribe((res) => {
+        var company = res.viewCompanyModal[0];
         if (this.idNum == 2) {
           this.clearFormArray(this.jobsEdit);
-          console.log('==========VIEWCOMPANYMODAL===============');
-          console.log(res);
-          var company = res.viewCompanyModal[0];
+
           var companyJobs: any[] = company.jobList;
           var companyContacts: any[] = company.pointOfContact.contacts;
-
-          console.log(companyJobs);
-          console.log(companyContacts);
 
           // Retrieving jobs
           if (companyJobs) {
             companyJobs.forEach((element, index) => {
               this.addJob(2);
-
               this.jobsEdit.controls[index].patchValue(element.jobID);
-              console.log(this.jobsEdit.controls[index].value);
             });
           }
 
@@ -370,8 +435,6 @@ export class CompanyListingComponent implements OnInit {
             var companyWebsites: any[] = companyContacts[2].website;
 
             if (companyPhones.length > 0) {
-              console.log('May phone!');
-              console.log(companyPhones);
               companyPhones.forEach((element) => {
                 this.addContact('phone', 2);
                 this.contactsEdit.controls[this.indexCount - 1].patchValue(
@@ -380,8 +443,6 @@ export class CompanyListingComponent implements OnInit {
               });
             }
             if (companyEmails.length > 0) {
-              console.log('May email!');
-              console.log(companyEmails);
               companyEmails.forEach((element) => {
                 this.addContact('email', 2);
                 this.contactsEdit.controls[this.indexCount - 1].patchValue(
@@ -390,8 +451,6 @@ export class CompanyListingComponent implements OnInit {
               });
             }
             if (companyWebsites.length > 0) {
-              console.log('May website!');
-              console.log(companyWebsites);
               companyWebsites.forEach((element) => {
                 this.addContact('website', 2);
                 this.contactsEdit.controls[this.indexCount - 1].patchValue(
@@ -407,28 +466,27 @@ export class CompanyListingComponent implements OnInit {
             editProvince: company.addrProvince,
             editCity: company.addrCity,
             editEndDate: company.effectivityEndDate,
+            editAllowance: company.hasAllowance,
           });
           this.editForm.get('editNature')?.setValue(company.natureOfCompany);
           this.editForm.get('editWorkSetup')?.setValue(company.workSetup);
-          console.log('================NATURE OF COMPANY===============');
-          console.log(company.natureOfCompany);
+        } else if (this.idNum == 3) {
+          this.deleteForm.patchValue({
+            deleteCompany: company.companyName,
+            deleteAddress: company.companyAddress,
+            deleteEndDate: this.formatDate(company.effectivityEndDate),
+          });
         }
-        this.loadingService.showLoading();
         this.viewCompanyList(this.userID);
       });
     } catch (err) {
-      console.log('Error: ', err);
+      console.error(err);
     }
   }
 
   // SAVE the edited company
   saveCompany(companyID: number) {
     try {
-      const editEndDate = new Date(this.editForm.get('editEndDate')?.value!);
-      console.log('=========== EDIT FORM JOBS FINAL DATA ==================');
-      console.log(this.editForm.get('editJobs')?.value!);
-      console.log(this.editForm.get('editContacts')?.value!);
-
       var contactArray: { [key: string]: any } = {};
       var dataPhone: { [key: string]: any } = {};
       var dataEmail: { [key: string]: any } = {};
@@ -446,7 +504,6 @@ export class CompanyListingComponent implements OnInit {
       dataWebsite[key4] = [];
 
       this.selectedContact.forEach((contact, index) => {
-        console.log('MY INDEX NUMBER IS CURRENTLY: ' + index);
         if (contact === 'phone') {
           contactData = this.editForm.get('editContacts')?.value.at(index);
           dataPhone[key2].push(contactData);
@@ -462,40 +519,39 @@ export class CompanyListingComponent implements OnInit {
       contactArray[key1].push(dataEmail);
       contactArray[key1].push(dataWebsite);
 
-      console.log('=================== FINAL DATA ===========');
-      console.log(contactArray);
-      console.log(this.editForm.get('editJobs')?.value!);
-      console.log(
-        '================COMPANY DETAILS TO BE SAVED: ==================='
-      );
-      console.log(this.editForm.get('editName')?.value!);
-      console.log(this.editForm.get('editAddress')?.value!);
-      console.log(this.editForm.get('editNature')?.value!);
-
-      this.companyListingServ
-        .saveCompany(companyID, {
-          companyName: this.editForm.get('editName')?.value!,
-          companyAddress: this.editForm.get('editAddress')?.value!,
-          natureOfCompany: this.editForm.get('editNature')?.value!,
-          effectivityEndDate: editEndDate,
-          isActivePartner: true,
-          createdBy: this.userLogged.currentUser?.uid!,
-          addrRegion: this.editForm.get('editRegion')?.value!,
-          addrProvince: this.editForm.get('editProvince')?.value!,
-          addrCity: this.editForm.get('editCity')?.value!,
-          jobPositions: this.editForm.get('editJobs')?.value!,
-          pointOfContact: contactArray,
-          workSetup: this.editForm.get('editWorkSetup')?.value!,
-        })
-        .subscribe(() => {
-          this.editForm.reset();
-          this.toggleModal(2, false);
-          this.viewCompanyList(this.userID);
-          this.selectedContact = [];
-        });
-      this.loadingService.showLoading(); //shows loading icon
+      this.submitted = true;
+      if (this.editForm.valid) {
+        this.companyListingServ
+          .saveCompany(companyID, {
+            companyName: this.editForm.get('editName')?.value!,
+            companyAddress: this.editForm.get('editAddress')?.value!,
+            natureOfCompany: this.editForm.get('editNature')?.value!,
+            effectivityEndDate: this.editForm.get('editEndDate')?.value!,
+            hasAllowance: this.editForm.get('editAllowance')?.value!,
+            isActivePartner: true,
+            createdBy: this.userLogged.currentUser?.uid!,
+            addrRegion: this.editForm.get('editRegion')?.value!,
+            addrProvince: this.editForm.get('editProvince')?.value!,
+            addrCity: this.editForm.get('editCity')?.value!,
+            jobPositions: this.editForm.get('editJobs')?.value!,
+            pointOfContact: contactArray,
+            workSetup: this.editForm.get('editWorkSetup')?.value!,
+          })
+          .subscribe(() => {
+            this.editForm.reset();
+            this.toggleModal(2, false);
+            this.viewCompanyList(this.userID);
+            this.selectedContact = [];
+            this.snack.openSnackBar(
+              'Company has been updated successfully.',
+              '',
+              'Success'
+            );
+          });
+        //shows loading icon
+      }
     } catch (err) {
-      console.log('Error: ', err);
+      console.error(err);
     }
   }
 
@@ -504,14 +560,31 @@ export class CompanyListingComponent implements OnInit {
     try {
       this.companyListingServ
         .deleteCompany(companyID, this.userLogged.currentUser!.uid!)
-        .subscribe(() => {
-          this.editForm.reset();
-          this.toggleModal(3, false);
-          this.viewCompanyList(this.userID);
+        .subscribe((res) => {
+          this.activeChats = res.deleteCompany.chats;
+          this.activeStudents = res.deleteCompany.students;
+          if (this.activeChats.length == 0 && this.activeStudents.length == 0) {
+            this.editForm.reset();
+            this.toggleModal(3, false);
+            this.viewCompanyList(this.userID);
+            this.snack.openSnackBar(
+              'Company has been deleted successfully.',
+              '',
+              'Info'
+            );
+          } else {
+            this.companyListingServ
+              .viewCompanyModal(companyID)
+              .subscribe((res) => {
+                this.companyToDelete = res.viewCompanyModal[0].companyName;
+              });
+
+            this.toggleModal(4, true);
+          }
         });
       this.loadingService.showLoading(); //shows loading icon
     } catch (err) {
-      console.log('Error DELETING: ', err);
+      console.error(err);
     }
   }
 
@@ -520,16 +593,13 @@ export class CompanyListingComponent implements OnInit {
     try {
       this.loadingService.showLoading();
       this.companyListingServ.viewCompanyList(userID).subscribe((response) => {
-        console.log(response);
         this.allCompanyListing = response.companylist;
         this.nature = response.nature;
         this.jobList = response.jobs;
         this.profile = response.profile[0];
-        console.log(this.profile);
         this.worksetup = response.worksetup;
         this.filterData(); // Ensure data is filtered initially
         this.jobServ.getCompanySheets().subscribe((response) => {
-          console.log(response);
           this.companySheets = response.companySheets;
           this.companyDB = response.companyDB;
           if (this.role.getValue() == 'student') {
@@ -539,13 +609,11 @@ export class CompanyListingComponent implements OnInit {
         });
       });
     } catch (err) {
-      console.log('Error fetching company list: ', err);
-      this.loadingService.hideLoading(); // Ensure loading indicator is hidden in case of error
+      console.error(err);
     }
   }
 
   // Address will expand when the mouse is hovered
-  
 
   get contactControls() {
     return (<FormArray>this.addForm.get('addContacts')).controls;
@@ -564,8 +632,6 @@ export class CompanyListingComponent implements OnInit {
   }
 
   addContact(selected: string, modal: number) {
-    console.log(selected);
-
     const ctrl = new FormControl(null);
     if (modal === 1) {
       // Add Modal
@@ -591,7 +657,6 @@ export class CompanyListingComponent implements OnInit {
       this.indexCount--;
     }
     this.selectedContact.splice(i, 1);
-    console.log(this.selectedContact);
   }
 
   clearFormArray(formArray: FormArray) {
@@ -648,6 +713,49 @@ export class CompanyListingComponent implements OnInit {
     // Initialize studentsCompanyScores as an empty object
     this.studentsCompanyScores = {};
     var student = this.profile;
+    this.studentID = student.studentID;
+    var studentRegion = student.addrRegion;
+    var studentProvince = student.addrProvince;
+    var studentCity = student.addrCity;
+    var studentSetup = student.workSetup;
+    var studentField = student.fieldID;
+    var studentAllowance = student.allowance;
+    var studentWeights: number[] = [];
+
+    // Determine if criteria is custom/default
+    if (student.prefRank == null) {
+      studentWeights = this.defaultWeights;
+    } else {
+      // Convert prefRank to weights
+      console.log('Meron');
+      student.prefRank.forEach((pref: number) => {
+        switch (pref) {
+          case 1:
+            studentWeights.push(0.2);
+            break;
+          case 2:
+            studentWeights.push(0.16);
+            break;
+          case 3:
+            studentWeights.push(0.15);
+            break;
+          case 4:
+            studentWeights.push(0.14);
+            break;
+          case 5:
+            studentWeights.push(0.13);
+            break;
+          case 6:
+            studentWeights.push(0.12);
+            break;
+          case 7:
+            studentWeights.push(0.1);
+            break;
+          default:
+            break;
+        }
+      });
+    }
 
     var moreRows;
     var lessRows;
@@ -677,9 +785,6 @@ export class CompanyListingComponent implements OnInit {
         }
         // Compare company names
         if (outerKey == innerKey) {
-          console.log('Match!');
-          console.log(outerKey);
-          console.log(innerKey);
           // check which is from sheets
           if (moreRows[i][0] == null) {
             lessRows[j]['dbData'] = moreRows[i];
@@ -692,16 +797,15 @@ export class CompanyListingComponent implements OnInit {
         }
       }
     }
-    console.log(this.filteredSheets);
 
     // Quantify generic company data
     for (let i = 0; i < this.filteredSheets.length; i++) {
       // Scores from sheets
       var key = this.filteredSheets[i][0];
       // Normalize values
-      this.nRelevance = this.filteredSheets[i][6] * this.defaultWeights[0];
-      this.nScope = this.filteredSheets[i][10] * this.defaultWeights[1];
-      this.nCareer = this.filteredSheets[i][12] * this.defaultWeights[2];
+      this.nRelevance = this.filteredSheets[i][6] * studentWeights[0];
+      this.nScope = this.filteredSheets[i][10] * studentWeights[1];
+      this.nCareer = this.filteredSheets[i][12] * studentWeights[2];
       this.companyScore = [];
       this.companiesScores[key] = [];
       this.companyScore.push(this.nRelevance);
@@ -709,13 +813,6 @@ export class CompanyListingComponent implements OnInit {
       this.companyScore.push(this.nCareer);
       this.companiesScores[key].push(this.companyScore);
     }
-
-    this.studentID = student.studentID;
-    var studentRegion = student.addrRegion;
-    var studentProvince = student.addrProvince;
-    var studentCity = student.addrCity;
-    var studentSetup = student.workSetup;
-    var studentField = student.fieldID;
 
     // Initialize an empty object to hold scores for each student
     this.studentsCompanyScores[this.studentID] = {};
@@ -729,6 +826,7 @@ export class CompanyListingComponent implements OnInit {
       var companyRegion = this.filteredSheets[i].dbData.addrRegion;
       var companyProvince = this.filteredSheets[i].dbData.addrProvince;
       var companyCity = this.filteredSheets[i].dbData.addrCity;
+      var companyAllowance = this.filteredSheets[i].dbData.hasAllowance;
 
       var key = this.filteredSheets[i].dbData.companyName;
 
@@ -738,6 +836,7 @@ export class CompanyListingComponent implements OnInit {
       var locScore = 1;
       var setupScore = 1;
       var fieldScore = 1;
+      var paidScore = 1;
 
       // Location score calculation
       if (companyCity === studentCity) {
@@ -776,13 +875,28 @@ export class CompanyListingComponent implements OnInit {
         fieldScore = 2;
       }
 
+      // Allowance score calculation
+      if (
+        (studentAllowance == 1 && companyAllowance == true) ||
+        (studentAllowance == 2 && companyAllowance == false)
+      ) {
+        paidScore = 4;
+      } else if (studentAllowance == 3 && companyAllowance == true) {
+        paidScore = 3;
+      } else if (studentAllowance == 3 && companyAllowance == false) {
+        paidScore = 2;
+      }
+
       // Assign normalized scores to the object
       this.studentsCompanyScores[this.studentID][key]['locScore'] =
-        locScore * this.defaultWeights[3];
+        locScore * studentWeights[3];
       this.studentsCompanyScores[this.studentID][key]['setupScore'] =
-        setupScore * this.defaultWeights[4];
+        setupScore * studentWeights[4];
       this.studentsCompanyScores[this.studentID][key]['fieldScore'] =
-        fieldScore * this.defaultWeights[5];
+        fieldScore * studentWeights[5];
+      this.studentsCompanyScores[this.studentID][key]['paidScore'] =
+        paidScore * studentWeights[6];
+
       this.runningTotal = 0;
       this.runningTotal = this.nRelevance + this.nScope + this.nCareer;
       this.runningTotal +=
@@ -791,6 +905,8 @@ export class CompanyListingComponent implements OnInit {
         this.studentsCompanyScores[this.studentID][key]['setupScore'];
       this.runningTotal +=
         this.studentsCompanyScores[this.studentID][key]['fieldScore'];
+      this.runningTotal +=
+        this.studentsCompanyScores[this.studentID][key]['paidScore'];
 
       this.studentsCompanyScores[this.studentID][key].push(
         this.companiesScores[key]
@@ -807,7 +923,6 @@ export class CompanyListingComponent implements OnInit {
       100
     ).toFixed(2);
     this.profile['companyRate'] = convRate;
-    console.log(this.studentsCompanyScores[this.studentID]);
   }
   rankCompanies(companyList: any): Array<any[]> {
     // Convert companyList to an array if it's an object
@@ -833,5 +948,18 @@ export class CompanyListingComponent implements OnInit {
       },
     };
     this.router.navigate(['/jobMatching/details'], data);
+  }
+
+  getVisibleIndices(): number[] {
+    const startIndex = this.paginator?.pageIndex * this.paginator?.pageSize;
+    const endIndex = startIndex + this.paginator?.pageSize;
+    return Array.from(
+      { length: this.filteredCompanyListing.length },
+      (_, index) => index
+    ).slice(startIndex, endIndex);
+  }
+
+  toAccount(): void {
+    this.router.navigate(['/account/' + this.userID]);
   }
 }

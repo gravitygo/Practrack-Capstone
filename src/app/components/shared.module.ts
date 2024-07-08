@@ -15,6 +15,8 @@ import { EvalGradeDonutComponent } from './eval-grade-donut/eval-grade-donut.com
 import { EvalLineComponent } from './eval-line/eval-line.component';
 import { MoaBarComponent } from './moa-bar/moa-bar.component';
 import { MoaRadarComponent } from './moa-radar/moa-radar.component';
+import { SnackbarComponent } from './snackbar/snackbar.component';
+import { MatIconModule } from '@angular/material/icon';
 
 @NgModule({
   declarations: [
@@ -30,8 +32,9 @@ import { MoaRadarComponent } from './moa-radar/moa-radar.component';
     EvalLineComponent,
     MoaBarComponent,
     MoaRadarComponent,
+    SnackbarComponent,
   ],
-  imports: [CommonModule, NgIconsModule, RouterModule],
+  imports: [CommonModule, NgIconsModule, RouterModule, MatIconModule],
   exports: [
     ModalComponent,
     NavBarComponent,
@@ -45,6 +48,7 @@ import { MoaRadarComponent } from './moa-radar/moa-radar.component';
     EvalLineComponent,
     MoaBarComponent,
     MoaRadarComponent,
+    SnackbarComponent,
   ],
 })
 export class SharedModule {}

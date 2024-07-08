@@ -4,21 +4,21 @@
   (click)="
     changeChat(
       chat.chat_id,
-      role === 'coordinator' ? chat.student_name : chat.coordinator_name
+      chat.chat_name,
+      chat.is_group,
+      chat.is_read,
+      chat.is_active
     )
   "
 >
   <div class="flex w-full justify-between">
     <h2 class="text-base font-semibold">
-      {{ role === 'coordinator' ? chat.student_name : chat.coordinator_name }}
+      {{ chat.chat_name }}
     </h2>
-
     <div
-      *ngIf="chat.notification > 0"
-      class="absolute -end-2 -top-2 inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-bold text-white dark:border-gray-900"
-    >
-      {{ chat.notification }}
-    </div>
+      *ngIf="chat.is_read == false"
+      class="absolute -end-2 -top-2 inline-flex h-4 w-4 rounded-full bg-red-500"
+    ></div>
   </div>
   <div class="flex w-full justify-between">
     <h2 class="mr-1 text-xs font-medium text-gray-400">

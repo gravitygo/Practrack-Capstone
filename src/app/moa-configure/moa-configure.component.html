@@ -118,6 +118,14 @@
                 </li>
               </ul>
             </div>
+            <p
+              class="ml-6 text-red-600 dark:text-red-500"
+              [ngStyle]="{
+                display: q1empty && submitted ? 'block' : 'none'
+              }"
+            >
+              Please choose an option.
+            </p>
           </div>
           <div
             class="mb-4 w-full grow rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 text-sm dark:border-neutral-600"
@@ -219,6 +227,14 @@
                 </li>
               </ul>
             </div>
+            <p
+              class="ml-6 text-red-600 dark:text-red-500"
+              [ngStyle]="{
+                display: q2empty && submitted ? 'block' : 'none'
+              }"
+            >
+              Please choose an option.
+            </p>
           </div>
           <div
             class="mb-4 w-full grow rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 text-sm dark:border-neutral-600"
@@ -320,6 +336,14 @@
                 </li>
               </ul>
             </div>
+            <p
+              class="ml-6 text-red-600 dark:text-red-500"
+              [ngStyle]="{
+                display: q3empty && submitted ? 'block' : 'none'
+              }"
+            >
+              Please choose an option.
+            </p>
           </div>
           <div class="flex items-center justify-center">
             <button

@@ -59,8 +59,12 @@ export class AccountComponent {
     });
   }
 
-  openSnackBar(message: string, action: string) {
-    this._snackBar.open(message, action);
+  openSnackBar(message: string) {
+    this._snackBar.open(message, '', {
+      duration: 2000,
+      verticalPosition: 'top',
+      horizontalPosition: 'center',
+    });
   }
 
   accountForm = this.fb.group({
@@ -79,8 +83,11 @@ export class AccountComponent {
     accEndDate: { value: '', disabled: true },
     accPrimaryInterest: ['', [Validators.required]],
     accJobPosition: ['', [Validators.required]],
+    accAllowance: ['', [Validators.required]],
     accWorkSetup: ['', [Validators.required]],
     accCompany: { value: '', disabled: true },
+    accSupvName: { value: '', disabled: true },
+    accSupvEmail: { value: '', disabled: true },
   });
 
   locForm = this.fb.group({
@@ -97,12 +104,11 @@ export class AccountComponent {
     this.userID = this.userLogged.currentUser?.uid!;
     this.role.subscribe({
       next: (value) => {
-        console.log(value); // Log the value when it changes
         try {
           this.loadingService.showLoading();
           this.viewAccount(this.userID);
         } catch (err) {
-          console.log(err);
+          console.error(err);
         } finally {
           this.loadingService.hideLoading();
         }
@@ -120,7 +126,6 @@ export class AccountComponent {
     else this.isModalOpen = !this.isModalOpen;
     this.idNum = idNum;
 
-    console.log(this.isModalOpen);
     if (this.account.addrRegion != null) {
       this.locForm.setValue({
         accRegion: this.account.addrRegion,
@@ -188,11 +193,8 @@ export class AccountComponent {
   }
 
   viewAccount(userID: string) {
-    console.log(this.role.getValue());
     if (this.role.getValue() == 'student') {
       this.accountServ.viewAccount(userID).subscribe((response) => {
-        console.log('===========STUDENT VIEW ACCOUNT============');
-        console.log(response);
         this.account = response.account[0];
         this.interests = response.interests;
         this.workSetup = response.workSetup;
@@ -208,9 +210,11 @@ export class AccountComponent {
           accLocProvince: this.account.addrProvince,
           accLocCity: this.account.addrCity,
           accDeployment: this.account.ojtPhase,
-          accStartDate: 'N/A',
-          accEndDate: 'N/A',
-          accCompany: 'N/A',
+          accStartDate: this.account.startDate ?? 'N/A',
+          accEndDate: this.account.endDate ?? 'N/A',
+          accCompany: this.account.companyName ?? 'N/A',
+          accSupvName: this.account.supvName ?? 'N/A',
+          accSupvEmail: this.account.supvEmail ?? 'N/A',
         });
         this.accountForm
           .get('accPrimaryInterest')
@@ -219,13 +223,10 @@ export class AccountComponent {
           .get('accJobPosition')
           ?.setValue(this.account.jobPrefID);
         this.accountForm.get('accWorkSetup')?.setValue(this.account.workSetup);
+        this.accountForm.get('accAllowance')?.setValue(this.account.allowance);
       });
     } else if (this.role.getValue() == 'coordinator') {
-      console.log('VIEW');
-
       this.accountServ.viewAccountCoor(userID).subscribe((response) => {
-        console.log('===========COORDINATOR VIEW ACCOUNT============');
-        console.log(response);
         this.account = response.account[0];
 
         this.accountForm.patchValue({
@@ -249,14 +250,15 @@ export class AccountComponent {
             addrCity: this.accountForm.get('accLocCity')?.value!,
             workSetup: this.accountForm.get('accWorkSetup')?.value!,
             jobPosition: this.accountForm.get('accJobPosition')?.value!,
+            allowance: Number(this.accountForm.get('accAllowance')?.value!),
           })
           .subscribe(() => {
             window.location.reload();
           });
-        this.openSnackBar('Account updated', 'Confirm');
+        this.openSnackBar('Account updated');
       }
     } catch (err) {
-      console.log('Error: ', err);
+      console.error(err);
     }
   }
 
@@ -282,14 +284,16 @@ export class AccountComponent {
 
     // Extract the name part
     const namePart = parts[0];
+    var nameParts: string[] = [''];
+    var firstName: string = '';
+    var lastName: string = '';
 
-    // Split the name part by '_' symbol to separate first and last names
-    const nameParts = namePart.split('_');
+    // Split the name part by symbol to separate first and last names
+    if (namePart.includes('_')) nameParts = namePart.split('_');
+    else if (namePart.includes('.')) nameParts = namePart.split('.');
 
-    // Capitalize first letter of each name part
-    const firstName = this.capitalizeFirstLetter(nameParts[0]);
-    const lastName = this.capitalizeFirstLetter(nameParts[1]);
-
+    firstName = this.capitalizeFirstLetter(nameParts[0]);
+    lastName = this.capitalizeFirstLetter(nameParts[1]);
     return { firstName, lastName };
   }
 
@@ -302,8 +306,6 @@ export class AccountComponent {
 
     // Account creation
     if (this.turnoverForm.valid) {
-      console.log(firstName);
-      console.log(lastName);
       this.loadingService.showLoading();
       // Admin auth createUser function
       this.accountServ
@@ -324,13 +326,12 @@ export class AccountComponent {
                 roles: 'Coordinator',
               })
               .subscribe((response) => {
-                console.log(response);
                 sendPasswordResetEmail(this.auth, this.email)
                   .then(() => {
                     this.success = true;
                   })
                   .catch((error) => {
-                    console.log(error);
+                    console.error(error);
                   })
                   .finally(() => this.loadingService.hideLoading());
               });
@@ -340,23 +341,20 @@ export class AccountComponent {
           }
         });
     }
-    console.log('Form submitted:', this.turnoverForm.value);
+    console.log('Form submitted');
   }
 
   deleteAccount() {
-    console.log('DELETING ACCOUNT...');
-    console.log(this.userLogged.currentUser!);
     this.loadingService.showLoading();
     this.accountServ
       .deleteAccount(this.userLogged.currentUser!)
       .subscribe((response) => {
         try {
           // success
-          console.log('success: ' + response.status);
           alert('Account deactivated successfully.');
           this.router.navigate(['login']);
         } catch (error) {
-          console.log(error);
+          console.error(error);
         } finally {
           this.loadingService.hideLoading();
         }

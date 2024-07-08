@@ -63,7 +63,7 @@ export class LoginComponent {
   onSubmit() {
     this.submitted = true;
     // Access form and form controls
-    console.log('Form submitted:', this.loginForm.value);
+    console.log('Form submitted');
     this.emailAndPasswordSignIn(this.loginForm.value);
   }
 }

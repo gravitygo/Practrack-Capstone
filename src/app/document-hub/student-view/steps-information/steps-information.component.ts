@@ -8,6 +8,7 @@ import { RemarksStatus } from 'src/typings';
   styleUrls: ['./steps-information.component.scss'],
 })
 export class StepsInformationComponent {
+  @Input() showStatus!: boolean;
   @Input() documentRequirements!: {
     requirement: string;
     version: string | undefined | null;
@@ -16,6 +17,7 @@ export class StepsInformationComponent {
     status: RemarksStatus;
     documentID: number | undefined | null;
     acadTermFileId: number;
+    isFileSubmission: boolean;
     requirementId: number;
   }[];
   remarksColor = RemarksColor;

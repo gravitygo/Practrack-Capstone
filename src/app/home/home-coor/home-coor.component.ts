@@ -6,6 +6,7 @@ import { LoadingService } from '../../services/loading.service';
 import { MatPaginator } from '@angular/material/paginator';
 import { TermService } from '../../services/term.service';
 import { CoorTurnoverService } from 'src/app/services/coor-turnover.service';
+import { SupabaseService } from 'src/app/services/supabase.service';
 
 @Component({
   selector: 'app-home-coor',
@@ -29,20 +30,30 @@ export class HomeCoorComponent {
 
   toggleTurnover: boolean = false;
 
+  requestMigrate: any = [];
+
   constructor(
     private homeServ: HomeService,
     private router: Router,
     private loadingService: LoadingService,
     private termServ: TermService,
-    private turnoverServ: CoorTurnoverService
+    private turnoverServ: CoorTurnoverService,
+    private supabaseService: SupabaseService
   ) {
+    this.loadingService.showLoading();
     this.turnoverServ.coorTurnoverBool().subscribe((value) => {
       this.toggleTurnover = value;
+      this.loadingService.hideLoading();
     });
   }
 
   ngOnInit(): void {
     this.getValues();
+
+    // LISTENER
+    this.supabaseService.getNotifs().subscribe(() => {
+      this.getValues();
+    });
   }
 
   getValues() {
@@ -52,7 +63,6 @@ export class HomeCoorComponent {
       // GET CURRENT TERM
       this.termServ.getCurrentTerm().subscribe((response) => {
         this.termRow = response;
-        //console.log(this.termRow);
         this.term = this.termRow.lookupID;
         this.termVal = this.termRow.value;
         this.termString = `A.Y. 20${this.termVal.slice(
@@ -71,16 +81,11 @@ export class HomeCoorComponent {
             this.paginator.length = this.rows.length;
 
             this.data = response[3];
-            /* LOGS
-          console.log(this.userLogged.currentUser!.uid!);
-          console.log(this.values);
-          console.log(this.rows); 
-          console.log(this.term);
-          console.log(this.data);*/
+            if (response[4]) this.requestMigrate = response[4];
           });
       });
     } catch (err) {
-      console.log('Error: ', err);
+      console.error(err);
     } finally {
       this.loadingService.hideLoading();
     }

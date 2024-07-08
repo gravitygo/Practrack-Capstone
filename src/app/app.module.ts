@@ -4,6 +4,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 // NPM Modules
 import { NgIconsModule } from '@ng-icons/core';
@@ -15,7 +17,17 @@ import { BreadcrumbModule, BreadcrumbService } from 'xng-breadcrumb';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 
+// Material
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 // Firebase
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
@@ -25,6 +37,8 @@ import { getStorage, provideStorage } from '@angular/fire/storage';
 
 // Components
 import { SharedModule } from './components/shared.module';
+import { StepsComponent } from './document-hub/student-view/steps/steps.component';
+import { StepsInformationComponent } from './document-hub/student-view/steps-information/steps-information.component';
 
 // Sub Pages
 import { RequirementsComponent } from './document-hub/coordinator-view/requirements/requirements.component';
@@ -32,6 +46,13 @@ import { StudentsComponent } from './document-hub/coordinator-view/students/stud
 import { OulcComponent } from './document-hub/coordinator-view/oulc/oulc.component';
 import { HomeCoorComponent } from './home/home-coor/home-coor.component';
 import { HomeStudentComponent } from './home/home-student/home-student.component';
+import { SubmissionComponent } from './document-hub/student-view/submission/submission.component';
+import { SubmissionDetailedComponent } from './document-hub/student-view/submission-detailed/submission-detailed.component';
+import { CoordinatorViewComponent } from './document-hub/coordinator-view/coordinator-view.component';
+import { StudentDocumentsComponent } from './document-hub/coordinator-view/student-documents/student-documents.component';
+import { StudentDocumentsInformationComponent } from './document-hub/coordinator-view/student-documents-information/student-documents-information.component';
+import { FileViewerComponent } from './document-hub/coordinator-view/file-viewer/file-viewer.component';
+import { SubmissionV2Component } from './document-hub/student-view/submission-v2/submission-v2.component';
 
 // Schematics
 import { MainTemplateComponent } from './schematics/main-template/main-template.component';
@@ -53,38 +74,27 @@ import { AccountComponent } from './account/account.component';
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { DocumentViewerComponent } from './document-hub/coordinator-view/document-viewer/document-viewer.component';
 import { CompanyEvaluationsComponent } from './company-evaluations/company-evaluations.component';
+import { BatchComponent } from './batch/batch.component';
+import { MoaConfigureComponent } from './moa-configure/moa-configure.component';
+import { MoaErrorComponent } from './moa-error/moa-error.component';
+import { JobMatchingDetailsComponent } from './job-matching-details/job-matching-details.component';
+import { MessagesComponent } from './inbox/messages/messages.component';
+import { ChatsComponent } from './inbox/chats/chats.component';
+import { CriteriaRankingComponent } from './criteria-ranking/criteria-ranking.component';
+import { LoginForgotComponent } from './login-forgot/login-forgot.component';
+import { DtrComponent } from './document-hub/student-view/dtr/dtr.component';
+import { OnboardingComponent } from './onboarding/onboarding.component';
 
 //Calendar Import
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
-import { Component } from '@angular/core';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatNativeDateModule } from '@angular/material/core';
-import { FormsModule } from '@angular/forms';
 import { FilterPipe } from './filter.pipe';
 import { TrimPipe } from './pipe/trim.pipe';
-import { StepsComponent } from './document-hub/student-view/steps/steps.component';
-import { StepsInformationComponent } from './document-hub/student-view/steps-information/steps-information.component';
-import { SubmissionComponent } from './document-hub/student-view/submission/submission.component';
-import { SubmissionDetailedComponent } from './document-hub/student-view/submission-detailed/submission-detailed.component';
-import { CoordinatorViewComponent } from './document-hub/coordinator-view/coordinator-view.component';
-import { StudentDocumentsComponent } from './document-hub/coordinator-view/student-documents/student-documents.component';
-import { StudentDocumentsInformationComponent } from './document-hub/coordinator-view/student-documents-information/student-documents-information.component';
 import { RouteReuseStrategy, Router } from '@angular/router';
 import { AlwaysRecreateStrategy } from './always-recreate-strategy';
-import { FileViewerComponent } from './document-hub/coordinator-view/file-viewer/file-viewer.component';
-import { MoaConfigureComponent } from './moa-configure/moa-configure.component';
 import { RoleGuardFactory } from './role.guard';
-import { JobMatchingDetailsComponent } from './job-matching-details/job-matching-details.component';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MoaErrorComponent } from './moa-error/moa-error.component';
-import { LoginForgotComponent } from './login-forgot/login-forgot.component';
-import { MessagesComponent } from './inbox/messages/messages.component';
-import { ChatsComponent } from './inbox/chats/chats.component';
 
 @NgModule({
   declarations: [
@@ -127,6 +137,11 @@ import { ChatsComponent } from './inbox/chats/chats.component';
     HomeCoorComponent,
     MessagesComponent,
     ChatsComponent,
+    CriteriaRankingComponent,
+    BatchComponent,
+    SubmissionV2Component,
+    DtrComponent,
+    OnboardingComponent,
   ],
   imports: [
     BrowserModule,
@@ -134,7 +149,7 @@ import { ChatsComponent } from './inbox/chats/chats.component';
     AppRoutingModule,
     ReactiveFormsModule, // Calendar
     MatDatepickerModule,
-    MatPaginatorModule, // Table Pagination
+    MatTooltipModule,
     BrowserAnimationsModule,
     BrowserModule,
     FormsModule,
@@ -142,6 +157,8 @@ import { ChatsComponent } from './inbox/chats/chats.component';
     MatInputModule,
     MatDatepickerModule,
     MatNativeDateModule, //Calendar End
+    MatButtonToggleModule,
+    MatPaginatorModule, // Table Pagination
     SharedModule,
     HttpClientModule,
     BrowserAnimationsModule,
@@ -158,6 +175,8 @@ import { ChatsComponent } from './inbox/chats/chats.component';
     provideStorage(() => getStorage()),
     provideAuth(() => getAuth()),
     NgxExtendedPdfViewerModule,
+    MatIconModule,
+    MatExpansionModule,
   ],
 
   providers: [

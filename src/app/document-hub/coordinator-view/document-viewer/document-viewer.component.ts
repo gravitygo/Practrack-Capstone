@@ -15,6 +15,7 @@ import { DocumentService } from 'src/app/services/document.service';
 import { KeyValue } from 'src/app/model/manifest.model';
 import { LoadingService } from 'src/app/services/loading.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { SnackbarService } from '../../../services/snackbar.service';
 
 @Component({
   selector: 'app-document-viewer',
@@ -22,18 +23,18 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
   styleUrls: ['./document-viewer.component.scss'],
 })
 export class DocumentViewerComponent {
-  documentId = this.route.snapshot.paramMap.get('documentID');
-  id = this.route.parent?.snapshot.paramMap.get('id');
-  documentInfo!: {
-    documentName: string;
-    fileStatus: number;
-    statusValue: string;
-    feedback?: string | null;
-    dateLastEdited?: string;
-  };
+  atfl = this.route.snapshot.paramMap.get('acadTermId');
+  documentName = this.route.snapshot.paramMap.get('name');
+  documentType!: boolean;
+  id = this.route.parent?.snapshot.paramMap.get('id'); //userId
+  documentId!: number;
+  documents: any;
   blob!: Blob;
   statuses: KeyValue[] = [];
   feedback!: FormGroup;
+  currentVersion?: number;
+  isApproved: boolean = false;
+  currentDocument: any;
 
   private baseUrl = 'gs://practrack-411303.appspot.com';
   private storage: Storage = inject(Storage);
@@ -48,28 +49,23 @@ export class DocumentViewerComponent {
     private route: ActivatedRoute,
     private router: Router,
     private loadingService: LoadingService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private snack: SnackbarService
   ) {
     this.loadingService.showLoading();
     this.manifestService.getOptions('status').subscribe((statuses) => {
+      statuses.pop();
       this.statuses = statuses;
-    });
-    this.documentService
-      .getSubmittedDocument(parseInt(this.documentId!))
-      .subscribe((value) => {
-        this.retrieveFile().then(() => {
-          this.documentInfo = value[0];
-          this.feedback = this.fb.group({
-            status: [this.documentInfo.fileStatus, [Validators.required]],
-            feedback: [this.documentInfo.feedback],
-          });
-          this.breadcrumbService.set(
-            '@viewDocumentForCoordinator',
-            `Document Viewer: ${value[0].documentName}`
-          );
-          this.loadingService.hideLoading();
-        });
+      this.feedback = this.fb.group({
+        status: [null, [Validators.required]],
+        feedback: [null],
       });
+      this.getFiles();
+      this.breadcrumbService.set(
+        '@viewDocumentForCoordinator',
+        `Document Viewer: ${this.documentName}` //add name
+      );
+    });
   }
 
   async uploadFile() {
@@ -81,38 +77,63 @@ export class DocumentViewerComponent {
       .sendFeedback(
         this.feedback.value.feedback,
         this.feedback.value.status,
-        parseInt(this.documentId!)
+        parseInt(this.currentDocument.documentID!)
       )
       .subscribe(() => {
         const storageRef = ref(
           this.storage,
-          `${this.baseUrl}/${this.id}/${this.documentId}.pdf`
+          `${this.baseUrl}/${this.id}/${this.documentId}-${this.currentVersion}.pdf`
         );
         uploadBytesResumable(storageRef, pdfBlob).then(() => {
-          this.router.navigate([`/documentHub/coordinator/${this.id}`]);
+          this.getFiles();
           this.loadingService.hideLoading();
+          this.snack.openSnackBar(
+            'File status is now updated successfully.',
+            '',
+            'Success'
+          );
         });
       });
   }
 
-  onFileSelected(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.pdfSrc = reader.result!;
-      };
-      reader.readAsDataURL(file);
-    }
+  getFiles() {
+    this.documentService
+      .getAllSubmittedDocument(Number.parseInt(this.atfl ?? ''), this.id ?? '')
+      .subscribe((value) => {
+        this.documents = value.rows[0];
+        this.documentId = this.documents.Requirement;
+        this.documentType = this.documents.isFileSubmission;
+        this.retrieveSubmittedFile(
+          this.currentVersion ?? this.documents.nextVersion - 1
+        ).then(() => {
+          (this.documents?.documents).forEach(
+            (element: { fileStatus: number }) => {
+              this.isApproved ||= element.fileStatus == 15;
+            }
+          );
+          this.loadingService.hideLoading();
+        });
+      });
   }
-
-  async retrieveFile() {
+  async retrieveSubmittedFile(version: number) {
+    this.loadingService.showLoading();
+    this.currentDocument = this.documents.documents[version];
     const storageRef = ref(
       this.storage,
-      `${this.baseUrl}/${this.id}/${this.documentId}.pdf`
+      `${this.baseUrl}/${this.id}/${this.documentId}-${version}.pdf`
     );
     getDownloadURL(storageRef).then((val) => {
       this.pdfSrc = val;
+      this.feedback = this.fb.group({
+        status: [
+          this.documents.documents[version].fileStatus,
+          [Validators.required],
+        ],
+        feedback: [this.documents.documents[version].feedback],
+      });
+
+      this.currentVersion = version;
+      this.loadingService.hideLoading();
     });
   }
 }

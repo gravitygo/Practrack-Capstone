@@ -20,4 +20,8 @@ export class HomeService {
   getStudentHome(uid: string): Observable<any> {
     return this.http.get<any[]>(`${this.url}/student`, { params: { uid } });
   }
+
+  getNotifs(uid: string): Observable<any> {
+    return this.http.get<any[]>(`${this.url}/notifs`, { params: { uid } });
+  }
 }

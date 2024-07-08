@@ -52,6 +52,13 @@ export class AccountService {
     return this.http.get<any>(`${this.url}/userWithPhase`, this.httpOptions);
   }
 
+  getUsersWithSpecificPhase(phase: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.url}/usersWithPhase/${phase}`,
+      this.httpOptions
+    );
+  }
+
   getCurrentUsersWithPhase(userID?: string): Observable<any> {
     return this.http.get<any>(
       `${this.url}/userWithPhase/${userID ?? this.auth.currentUser?.uid}`,
@@ -104,5 +111,19 @@ export class AccountService {
       );
     }
     return EMPTY;
+  }
+
+  updateCriteria(userID: string, criteria: string[]): Observable<any> {
+    return this.http.post<any>(
+      `${this.url}/criteria/${userID}`,
+      criteria,
+      this.httpOptions
+    );
+  }
+  getCriteria(userID: string): Observable<any> {
+    return this.http.get<any>(
+      `${this.url}/criteria/${userID}`,
+      this.httpOptions
+    );
   }
 }

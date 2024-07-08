@@ -3,6 +3,7 @@ import { HomeService } from '../../services/home.service';
 import { Auth } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { LoadingService } from '../../services/loading.service';
+import { SupabaseService } from 'src/app/services/supabase.service';
 
 @Component({
   selector: 'app-home-student',
@@ -15,13 +16,13 @@ export class HomeStudentComponent {
   term: string = 'AY23-24 T2';
 
   studentID = 0;
-  studentName = '';
-  ojtPhase = '';
-  companyInfo = {
-    company: 'N/A',
-    startDate: 'N/A',
-    endDate: 'N/A',
-  };
+  studentName: string = '';
+  ojtPhase: string = '';
+  company: any;
+  startDate: any;
+  endDate: any;
+  hoursRendered: number = 0;
+  hoursRequired: number = 0;
 
   pendingSubmissions = 0;
   unreadMessages = 0;
@@ -37,14 +38,28 @@ export class HomeStudentComponent {
     timeZoneName: 'short',
   }).format(new Date());
 
+  requested = false;
+  approved = false;
+
+  deadlineAlerts: any[] = [];
+  almostDue: boolean = false;
+  almostDueStr: string = '';
+  overdue: boolean = false;
+
   constructor(
     private homeServ: HomeService,
     private router: Router,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private supabaseService: SupabaseService
   ) {}
 
   ngOnInit(): void {
     this.getStudentHome();
+
+    // LISTENER
+    this.supabaseService.getNotifs().subscribe(() => {
+      this.getStudentHome();
+    });
   }
 
   getStudentHome() {
@@ -56,27 +71,62 @@ export class HomeStudentComponent {
           this.studentID = response[0].studentID;
           this.studentName = response[0].firstName;
           this.ojtPhase = response[0].ojtPhase;
-          if (this.ojtPhase !== 'Pre-Deployment') {
-            this.companyInfo.company = response[0].companyName;
-            this.companyInfo.startDate = response[0].startDate;
-            this.companyInfo.endDate = response[0].endDate;
-          }
+          this.company = response[0].companyName;
+          this.startDate = response[0].startDate;
+          this.endDate = response[0].endDate;
+          this.hoursRendered = response[0].hoursRendered;
+          this.hoursRequired = response[0].hours;
+
           this.pendingSubmissions = response[1].pending_submissions_count;
           this.unreadMessages = response[2].unread_messages_count;
 
-          /* LOGS 
-          console.log(this.userLogged.currentUser!.uid!);
-          console.log(this.studentID);
-          console.log(this.studentName);
-          console.log(this.ojtPhase);
-          console.log(this.pendingSubmissions);
-          console.log(this.unreadMessages);
-          console.log(this.companyInfo); */
+          this.requested = response[0].requestMigrate;
+          this.approved = response[3].exists;
+
+          // DEADLINE ALERTS
+          this.deadlineAlerts = response[4];
+
+          switch (this.deadlineAlerts.length) {
+            case 2: // Both overdue and almostDue
+              this.overdue = true;
+              this.almostDueAlert(this.deadlineAlerts[1].date_diff);
+              break;
+            case 1: // Either overdue or almostDue
+              if (this.deadlineAlerts[0].date_diff < 0) {
+                // overdue
+                this.overdue = true;
+                this.almostDue = false;
+              } else {
+                // almostDue
+                this.overdue = false;
+                this.almostDueAlert(this.deadlineAlerts[0].date_diff);
+              }
+              break;
+            default: // Neither
+              this.overdue = false;
+              this.almostDue = false;
+          }
         });
     } catch (err) {
-      console.log('Error: ', err);
+      console.error(err);
     } finally {
       this.loadingService.hideLoading();
+    }
+  }
+
+  // DEADLINE ALERTS
+  almostDueAlert(val: number) {
+    this.almostDue = true;
+
+    switch (val) {
+      case 0:
+        this.almostDueStr = 'less than a day';
+        break;
+      case 1:
+        this.almostDueStr = '1 day';
+        break;
+      default:
+        this.almostDueStr = val + ' days';
     }
   }
 }

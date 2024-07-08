@@ -1,27 +1,49 @@
 <!-- WARNING: <1 COORDINATOR -->
 <div
-  class="w-full rounded-lg border border-gray-200 bg-red-100 p-4 shadow"
+  class="mb-2 w-full rounded-lg border border-red-600 bg-red-50 p-4 shadow"
   *ngIf="toggleTurnover"
 >
-  <div class="flex">
+  <div class="flex items-center">
     <ng-icon
       name="matWarningAmberRound"
       size="2.25rem"
       class="text-red-600"
     ></ng-icon>
-    <p class="ml-2 text-sm font-medium text-red-900">
+    <p class="ml-2 text-sm font-medium text-gray-900">
       There is currently more than one active coordinator account. If you are
       not the current coordinator, please
       <a
         [routerLink]="'/account/' + userLogged.currentUser!.uid!"
-        class="text-sm font-medium text-red-600 hover:text-red-500 hover:underline"
+        class="text-sm font-bold text-blue-600 hover:text-blue-500 hover:underline"
         >deactivate</a
       >
       to complete coordinator turnover.
     </p>
   </div>
 </div>
-
+<!-- COORDINATOR MIGRATION ALERT -->
+<div
+  class="mb-2 w-full rounded-lg border border-amber-300 bg-yellow-50 p-4 shadow"
+  *ngFor="let request of requestMigrate"
+>
+  <div class="flex items-center">
+    <ng-icon
+      name="matLightbulbOutline"
+      size="2.25rem"
+      class="text-amber-300"
+    ></ng-icon>
+    <p class="ml-2 text-sm font-medium text-gray-900">
+      <b> {{ request.fullName }}</b
+      ><i> ({{ request.degreeCode }})</i> has requested for company transfer.
+      Review their request
+      <a
+        [routerLink]="'/documentHub/coordinator/' + request.userID"
+        class="text-sm font-bold text-blue-600 hover:text-blue-500 hover:underline"
+        >here.</a
+      >
+    </p>
+  </div>
+</div>
 <div class="mt-4 flex w-full gap-4">
   <div
     class="block w-1/3 rounded-lg border border-gray-200 bg-white p-4 shadow"
@@ -31,7 +53,7 @@
     <hr class="mb-4 h-[1px] w-full bg-neutral-300" />
     <app-home-donut [data]="data"></app-home-donut>
   </div>
-  <div class="flex w-1/3 flex-col gap-4">
+  <div class="flex w-1/4 flex-col gap-4">
     <div
       class="block w-full rounded-lg border border-gray-200 bg-white p-4 shadow"
     >
@@ -78,7 +100,18 @@
   <div
     class="block w-full rounded-lg border border-gray-200 bg-white p-4 shadow"
   >
-    <h3 class="text-xl font-semibold">Ongoing Deployment</h3>
+    <h3 class="text-xl font-semibold">Missing Requirements</h3>
+    <div class="flex w-full items-center gap-8 text-gray-600">
+      <p>
+        <i>Note:</i> Only students from active batches are displayed. Configure
+        batches
+        <b
+          class="cursor-pointer text-blue-600 underline underline-offset-4 hover:text-blue-500"
+          routerLink="/batch"
+          >here.</b
+        >
+      </p>
+    </div>
     <hr class="h-[1px] w-full bg-neutral-300" />
     <table
       class="w-full table-fixed text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
@@ -87,9 +120,11 @@
         class="text-md border-b bg-white text-center text-neutral-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
       >
         <tr>
-          <th scope="col" class="text-l px-6 py-3">Student</th>
-          <th scope="col" class="text-l px-6 py-3">Degree Code</th>
-          <th scope="col" class="text-l px-6 py-3">Missing Reports</th>
+          <th scope="col" class="text-l px-3 py-3">Student</th>
+          <th scope="col" class="text-l px-3 py-3">Batch</th>
+          <th scope="col" class="text-l px-3 py-3">Degree Code</th>
+          <th scope="col" class="text-l px-3 py-3">Phase</th>
+          <th scope="col" class="text-l px-3 py-3">Documents</th>
         </tr>
       </thead>
       <tbody>
@@ -97,22 +132,23 @@
           class="border-b bg-white text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
           *ngFor="let index of getVisibleIndices()"
         >
-          <td class="px-6 py-2">
+          <td class="px-3 py-2">
             <b>{{ rows[index].lastName }},</b>
             {{ rows[index].firstName }}
           </td>
-          <td class="px-6 py-2">{{ rows[index].degreeCode }}</td>
-          <td class="px-6 py-2">{{ rows[index].missing_docs }}</td>
+          <td class="px-3 py-2">{{ rows[index].acadTerm }}</td>
+          <td class="px-3 py-2">{{ rows[index].degreeCode }}</td>
+          <td class="px-3 py-2">{{ rows[index].ojtPhase }}</td>
+          <td class="px-3 py-2">{{ rows[index].missing_docs }}</td>
         </tr>
       </tbody>
     </table>
     <mat-paginator
       [length]="rows.length"
-      [pageSize]="4"
-      [pageSizeOptions]="[4, 12, 20]"
+      [pageSize]="5"
+      [pageSizeOptions]="[5, 10, 20, 50]"
       (page)="paginator.pageIndex = $event.pageIndex"
     >
     </mat-paginator>
   </div>
 </div>
-<app-loading></app-loading>

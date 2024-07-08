@@ -21,11 +21,10 @@ export class ChangePasswordComponent {
 
   forgotPassword() {
     this.userID = this.userLogged.currentUser?.uid!;
-    console.log(this.userID);
     this.accountServ.getEmail(this.userID).subscribe((response) => {
       this.email = response.email[0].email;
       sendPasswordResetEmail(this.auth, this.email).catch((error) => {
-        console.log(error);
+        console.error(error);
       });
     });
   }

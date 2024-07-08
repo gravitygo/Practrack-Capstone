@@ -2,9 +2,79 @@
   <xng-breadcrumb></xng-breadcrumb>
 </div>
 <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
+<div
+  class="relative mb-4 mt-4 rounded border border-neutral-200 bg-white p-6"
+  *ngIf="requested"
+>
+  <div class="w-full rounded-b border-amber-300 bg-yellow-50 p-4">
+    <div class="flex place-content-end gap-3 p-4">
+      <h1 class="grow text-xl font-semibold">Request for Migration</h1>
+    </div>
+    <hr class="mb-4 h-[2px] w-full bg-amber-300" />
+    <form [formGroup]="requestForm" (submit)="submitDecision()">
+      <div
+        class="mb-4 w-full rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700"
+      >
+        <div class="ml-3 mr-3 rounded-lg bg-white px-4 py-2 dark:bg-gray-800">
+          <textarea
+            id="reason"
+            rows="3"
+            class="w-full border-0 bg-white px-0 text-sm text-gray-900 focus:ring-0 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+            formControlName="reason"
+          >
+          </textarea>
+        </div>
+      </div>
+      <div class="mb-2 ml-6 mr-6 mt-3 flex justify-end gap-6">
+        <div>
+          <input
+            type="radio"
+            name="request"
+            value="rejected"
+            (change)="decision = 'reject'"
+            class="self-center"
+          /><label class="p-2">Reject</label>
+        </div>
+        <div>
+          <input
+            type="radio"
+            name="request"
+            value="acceptRetain"
+            (change)="decision = 'acceptRetain'"
+            class="self-center"
+          /><label class="p-2">Accept & <b>Retain</b> Hours</label>
+        </div>
+        <div>
+          <input
+            type="radio"
+            name="request"
+            value="acceptReset"
+            class="self-center"
+            (change)="decision = 'acceptReset'"
+          /><label class="p-2">Accept & <b>Reset</b> Hours</label>
+        </div>
+      </div>
+      <span
+        class="text-warning-500 mb-2 mr-6 text-end text-[10px] font-medium text-red-600 dark:text-red-500"
+        [ngStyle]="{
+          display: decision == '' && submitted ? 'block' : 'none'
+        }"
+        >Please choose an option.</span
+      >
+      <div class="mb-2 ml-6 mr-6 flex justify-end gap-6">
+        <button
+          class="flex items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+          type="submit"
+        >
+          <p class="text-xs font-medium text-white">Confirm Decision</p>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 <div class="flex flex-col">
   <div class="flex flex-col rounded-t border border-neutral-200 bg-white p-6">
-    <h1 class="text-xl">
+    <h1 class="mb-2 text-xl">
       {{ fullName }}'{{
         fullName.charAt(fullName.length - 1) == 's' ? '' : 's'
       }}
@@ -14,19 +84,20 @@
       class="flex w-full items-center space-x-2 rounded-lg border border-gray-200 bg-white p-3 text-center text-sm font-medium text-gray-500 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 sm:space-x-4 sm:p-4 sm:text-base rtl:space-x-reverse"
     >
       <li
+        (click)="changePhase(i + 1)"
         *ngFor="let step of steps; index as i"
         [ngClass]="
           ojtPhase == i + 1
-            ? 'text-blue-600 dark:text-blue-500'
-            : 'border-gray-500 text-gray-500 dark:border-gray-400'
+            ? 'text-blue-600 hover:text-blue-500 dark:text-blue-500'
+            : 'border-gray-500 text-gray-500 hover:text-gray-400 dark:border-gray-400'
         "
-        class="flex shrink-0 items-center rounded-full"
+        class="group flex shrink-0 cursor-pointer items-center rounded-full"
       >
         <span
           [ngClass]="
             ojtPhase == i + 1
-              ? 'border-blue-600 text-blue-600 dark:text-blue-500'
-              : 'border-gray-500 text-gray-500 dark:border-gray-400'
+              ? 'border-blue-600 group-hover:border-blue-500'
+              : 'border-gray-500 group-hover:border-gray-400'
           "
           class="me-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border"
         >
@@ -53,7 +124,25 @@
       </li>
     </ol>
   </div>
-  <div class="flex justify-between border-x border-neutral-200 bg-white p-6">
+
+  <div
+    class="flex flex-col justify-between border-x border-neutral-200 bg-white p-6"
+  >
+    <div class="mb-4 flex w-full items-center justify-end gap-8 text-gray-600">
+      <p>
+        <i>Note:</i> Only published requirements are displayed. Configure
+        requirements
+        <b
+          class="cursor-pointer text-blue-600 underline underline-offset-4 hover:text-blue-500"
+          ><a
+            [routerLink]="['/documentHub/coordinator']"
+            [queryParams]="{ tab: 'requirements' }"
+            >here.</a
+          ></b
+        >
+      </p>
+    </div>
+
     <div class="relative w-full shadow-md sm:rounded-lg">
       <app-student-documents-information
         class="w-full"
@@ -64,4 +153,317 @@
   <div
     class="flex justify-end rounded-b border border-neutral-200 bg-white p-6"
   ></div>
+  <div
+    class="relative mt-4 rounded border border-neutral-200 bg-white p-6 shadow-md"
+  >
+    <div class="w-full rounded-b bg-gray-100 p-4">
+      <div class="flex place-content-end items-center gap-4 p-4">
+        <app-title-icon iconName="matPersonOutline"></app-title-icon>
+        <h1 class="grow text-xl font-semibold">
+          {{ fullName }}'{{
+            fullName.charAt(fullName.length - 1) == 's' ? '' : 's'
+          }}
+          Deployment
+        </h1>
+        <button
+          type="button"
+          (click)="toggleModal(1)"
+          matTooltip="Edit details"
+        >
+          <ng-icon
+            name="matEditOutline"
+            size="24px"
+            class="mr-0 text-gray-500 hover:text-gray-900"
+          ></ng-icon>
+        </button>
+        <hr class="h-[2rem] w-[2px] bg-neutral-300" />
+        <button
+          type="button"
+          (click)="toggleModal(2)"
+          matTooltip="Reset details"
+        >
+          <ng-icon
+            name="matPlaylistRemoveOutline"
+            size="24px"
+            class="mr-0 text-gray-500 hover:text-gray-900"
+          ></ng-icon>
+        </button>
+      </div>
+      <hr class="mb-4 h-[2px] w-full bg-neutral-300" />
+      <div class="mb-3 ml-6 mr-6 flex place-items-center">
+        <h3 class="w-2/5 text-base font-medium">Start Date</h3>
+        <div class="grow justify-start">
+          <h4>{{ formattedStartDate ?? 'Not yet set' }}</h4>
+        </div>
+      </div>
+      <div class="mb-3 ml-6 mr-6 flex place-items-center">
+        <h3 class="w-2/5 text-base font-medium">End Date</h3>
+        <div class="grow justify-start">
+          <h4>{{ formattedEndDate ?? 'Not yet set' }}</h4>
+        </div>
+      </div>
+      <div class="mb-3 ml-6 mr-6 flex place-items-center">
+        <h3 class="w-2/5 text-base font-medium">Company Deployment</h3>
+        <div class="grow justify-start">
+          <h4>{{ company ?? 'Not yet set' }}</h4>
+        </div>
+      </div>
+      <div class="mb-3 ml-6 mr-6 flex place-items-center">
+        <h3 class="w-2/5 text-base font-medium">Supervisor Name</h3>
+        <div class="grow justify-start">
+          <h4>{{ supvName ?? 'Not yet set' }}</h4>
+        </div>
+      </div>
+      <div class="mb-3 ml-6 mr-6 flex place-items-center">
+        <h3 class="w-2/5 text-base font-medium">Supervisor Email</h3>
+        <div class="grow justify-start">
+          <h4>{{ supvEmail ?? 'Not yet set' }}</h4>
+        </div>
+      </div>
+      <div class="mb-3 ml-6 mr-6 flex place-items-center">
+        <h3 class="w-2/5 text-base font-medium">Total Hours Rendered</h3>
+        <div class="grow justify-start">
+          <h4>{{ hoursRendered }} out of {{ hoursRequired }}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+<!-- EDIT STUDENT DETAILS -->
+<app-modal
+  *ngIf="idNum === 1"
+  [isOpen]="isModalOpen"
+  [hasHeader]="true"
+  headerName="Edit Student Details"
+  (eventToggleModal)="toggleModal(1, $event)"
+>
+  <form
+    class="flex flex-col gap-6"
+    [formGroup]="detailsForm"
+    (submit)="saveStudentDetails(id!)"
+  >
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">Start Date</h4>
+      <mat-form-field
+        class="border-[1px]rounded-md w-50% h-50 rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+      >
+        <mat-label>Choose a date</mat-label>
+        <input
+          matInput
+          [matDatepicker]="picker"
+          formControlName="addStartDate"
+        />
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+      <span
+        class="text-sm font-normal text-red-500"
+        [ngStyle]="{
+          display:
+            detailsForm.get('addStartDate')!.invalid && submitted
+              ? 'block'
+              : 'none'
+        }"
+      >
+        Please select a start date.
+      </span>
+    </div>
+
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">End Date</h4>
+      <mat-form-field
+        class="border-[1px]rounded-md w-50% h-50 rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+      >
+        <mat-label>Choose a date</mat-label>
+        <input
+          matInput
+          [matDatepicker]="picker1"
+          formControlName="addEndDate"
+        />
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="picker1"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #picker1></mat-datepicker>
+      </mat-form-field>
+      <span
+        class="text-sm font-normal text-red-500"
+        [ngStyle]="{
+          display:
+            detailsForm.get('addEndDate')!.invalid && submitted
+              ? 'block'
+              : 'none'
+        }"
+      >
+        Please select an end date.
+      </span>
+    </div>
+
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">Company Deployment</h4>
+      <select
+        id="addCompany"
+        class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+        formControlName="addCompany"
+      >
+        <option value="" disabled selected>Select company</option>
+        <option *ngFor="let company of companies" [ngValue]="company.companyID">
+          {{ company.companyName }}
+        </option>
+      </select>
+      <span
+        class="text-sm font-normal text-red-500"
+        [ngStyle]="{
+          display:
+            detailsForm.get('addCompany')!.invalid && submitted
+              ? 'block'
+              : 'none'
+        }"
+      >
+        Please select a company.
+      </span>
+    </div>
+
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">Supervisor Name</h4>
+      <input
+        type="text"
+        class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        formControlName="addSupvName"
+      />
+      <span
+        class="text-sm font-normal text-red-500"
+        [ngStyle]="{
+          display:
+            detailsForm.get('addSupvName')!.invalid && submitted
+              ? 'block'
+              : 'none'
+        }"
+      >
+        Please enter a name.
+      </span>
+    </div>
+
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">Supervisor Email</h4>
+      <input
+        type="text"
+        class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        formControlName="addSupvEmail"
+      />
+      <span
+        class="text-sm font-normal text-red-500"
+        [ngStyle]="{
+          display:
+            detailsForm.get('addSupvEmail')!.invalid && submitted
+              ? 'block'
+              : 'none'
+        }"
+      >
+        Please enter an email.
+      </span>
+    </div>
+
+    <hr />
+
+    <button
+      class="w-full rounded bg-lime-600 px-6 py-3 text-center text-white hover:bg-lime-700"
+      type="submit"
+    >
+      Save
+    </button>
+  </form>
+</app-modal>
+<!-- RESET STUDENT DETAILS -->
+<app-modal
+  *ngIf="idNum === 2"
+  [isOpen]="isModalOpen"
+  [hasHeader]="true"
+  headerName="Reset Student Details"
+  (eventToggleModal)="toggleModal(2, $event)"
+>
+  <div class="py-4 text-center">
+    <p>The following details will be <b>RESET:</b></p>
+  </div>
+  <form
+    class="flex flex-col gap-6"
+    [formGroup]="detailsForm"
+    (submit)="resetStudentDetails(id!)"
+  >
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">Start Date</h4>
+      <mat-form-field
+        class="border-[1px]rounded-md w-50% h-50 rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+      >
+        <input
+          matInput
+          [matDatepicker]="picker"
+          formControlName="addStartDate"
+        />
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">End Date</h4>
+      <mat-form-field
+        class="border-[1px]rounded-md w-50% h-50 rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+      >
+        <input
+          matInput
+          [matDatepicker]="picker1"
+          formControlName="addEndDate"
+        />
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="picker1"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #picker1></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">Company Deployment</h4>
+      <select
+        id="addCompany"
+        class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+        formControlName="addCompany"
+      >
+        <option value="" disabled selected>Select company</option>
+        <option *ngFor="let company of companies" [ngValue]="company.companyID">
+          {{ company.companyName }}
+        </option>
+      </select>
+    </div>
+
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">Supervisor Name</h4>
+      <input
+        type="text"
+        class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        formControlName="addSupvName"
+      />
+    </div>
+
+    <div class="input-group mb-4">
+      <h4 class="text-base font-medium text-neutral-600">Supervisor Email</h4>
+      <input
+        type="text"
+        class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+        formControlName="addSupvEmail"
+      />
+    </div>
+    <hr />
+    <button
+      class="w-full rounded bg-lime-600 px-6 py-3 text-center text-white hover:bg-lime-700"
+      type="submit"
+    >
+      Reset
+    </button>
+  </form>
+</app-modal>

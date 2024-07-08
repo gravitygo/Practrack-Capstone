@@ -11,11 +11,17 @@ export class HomeDonutComponent {
 
   public chart: any;
   private cLabels = [
-    'Pre-Deployment Stage',
+    'Pre-Deployment',
     'Ongoing Deployment',
-    'Post-Deployment Stage',
+    'Post-Deployment',
+    'Completed',
   ];
-  private cColors = ['rgb(245 158 11)', 'rgb(16 185 129)', 'rgb(220 38 38)'];
+  private cColors = [
+    'rgb(245 158 11)',
+    'rgb(16 185 129)',
+    'rgb(220 38 38)',
+    'rgb(211 211 211)',
+  ];
 
   ngOnInit(): void {
     if (this.data) {
@@ -36,7 +42,10 @@ export class HomeDonutComponent {
         this.data.total_pre,
         this.data.total_ongoing,
         this.data.total_post,
+        this.data.total_completed,
       ];
+      this.chart.options.plugins.legend.display =
+        this.data.total > 0 ? true : false; // Check if total is greater than 0
       this.chart.update(); // Update the chart to reflect the changes
     } else {
       // If the chart instance doesn't exist, create it
@@ -59,6 +68,7 @@ export class HomeDonutComponent {
               this.data.total_pre,
               this.data.total_ongoing,
               this.data.total_post,
+              this.data.total_completed,
             ],
             backgroundColor: this.cColors,
             hoverOffset: 4,

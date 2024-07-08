@@ -15,7 +15,7 @@ export class EvalResDonutComponent {
   private cColors = ['rgb(16 185 129)', 'rgb(245 158 11)'];
 
   ngOnInit(): void {
-    if (this.data) {
+    if (this.data && this.total) {
       this.createChart();
     }
   }
@@ -33,8 +33,8 @@ export class EvalResDonutComponent {
     if (this.chart) {
       // Update the chart data if the chart instance exists
       this.chart.data.datasets[0].data = this.data;
-      this.chart.options.plugins.title.text =
-        this.total + ' in Post-Deployment';
+      this.chart.options.plugins.title.text = this.total + ' Respondents';
+      this.chart.options.plugins.legend.display = this.total > 0 ? true : false; // Check if total is greater than 0
       this.chart.update(); // Update the chart to reflect the changes
     } else {
       // If the chart instance doesn't exist, create it
@@ -65,7 +65,7 @@ export class EvalResDonutComponent {
         plugins: {
           title: {
             display: true,
-            text: this.total + ' in Post-Deployment',
+            text: this.total + ' Respondents',
             position: 'top',
             font: {
               size: 20,

@@ -40,8 +40,6 @@ export class EvalLineComponent {
   }
 
   createChart() {
-    const showLegend = 3 > 0 ? true : false; // Check if total is greater than 0
-
     this.chart = new Chart('evalLineChart', {
       type: 'line',
 

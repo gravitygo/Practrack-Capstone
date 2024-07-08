@@ -14,19 +14,28 @@
   <tbody>
     <tr
       *ngIf="documentRequirements && documentRequirements.length == 0"
-      class="cursor-pointer border-b bg-red-200 text-center hover:bg-red-300"
+      class="cursor-pointer border-b bg-gray-200 text-center hover:bg-gray-300"
     >
-      <td class="text-lg text-red-600" colspan="4">No Submissions yet.</td>
+      <td class="text-lg text-gray-600" colspan="4">
+        No requirements published yet.
+      </td>
     </tr>
     <tr
-      class="cursor-pointer border-b text-center dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+      class="border-b text-center dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
       [ngClass]="
-        rows.submittedOn
-          ? 'bg-white hover:bg-gray-50'
-          : 'bg-red-200 hover:bg-red-300'
+        rows.status == null || rows.status == 'Void'
+          ? 'bg-red-200'
+          : 'bg-white hover:bg-gray-50'
       "
       *ngFor="let rows of documentRequirements; index as i"
-      [routerLink]="rows.documentID + ''"
+      [routerLink]="rows.acadTermFileID + '/' + rows.requirement"
+      [class.cursor-pointer]="
+        rows.status == null || rows.status == 'Void' ? 0 : -1
+      "
+      [ngStyle]="{
+        'pointer-events':
+          rows.status == null || rows.status == 'Void' ? 'none' : null
+      }"
     >
       <th
         scope="row"
@@ -38,7 +47,11 @@
         {{ rows.version ?? '-' }}
       </td>
       <td class="px-6 py-4">
-        {{ rows.submittedOn ? (rows.submittedOn | date: 'MM/dd/yyyy') : '-' }}
+        {{
+          rows.submittedOn
+            ? (rows.submittedOn | date: 'MM/dd/yyyy h:mm a')
+            : '-'
+        }}
       </td>
       <td class="px-6 py-4">
         <div
@@ -51,7 +64,7 @@
             size="16px"
             class="mr-0 text-white"
           ></ng-icon>
-          {{ rows.status }}
+          {{ rows.status == null ? 'No Submission' : rows.status }}
         </div>
       </td>
     </tr>

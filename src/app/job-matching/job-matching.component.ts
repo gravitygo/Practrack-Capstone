@@ -1,15 +1,16 @@
-import { Component, inject } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { NavigationExtras, Router } from '@angular/router';
 import { JobMatchingService } from '../services/job-matching.service';
 import { LoadingService } from '../services/loading.service';
-
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 @Component({
   selector: 'app-job-matching',
   templateUrl: './job-matching.component.html',
   styleUrls: ['./job-matching.component.scss'],
 })
 export class JobMatchingComponent {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
   // User Logged
   private auth: Auth = inject(Auth);
   userLogged = this.auth;
@@ -18,12 +19,20 @@ export class JobMatchingComponent {
   filteredSheets: any[] = [];
   companyDB: any;
   studentDB: any;
-  f2fWeights: any[] = [];
-  defaultWeights: any[] = [0.2083, 0.1667, 0.1667, 0.125, 0.125, 0.2083];
+  defaultWeights: any[] = [0.1, 0.13, 0.12, 0.14, 0.15, 0.2, 0.16];
+  // Relev,  Scope,  Career,  Loc,   Setup,  Field,  Paid
   companiesScores: { [key: string]: any } = {};
   studentsCompanyScores: { [key: string]: any } = {};
   companyScore: any[] = [];
   runningTotal = 0;
+
+  // Paginator Variables
+  pageSize = 10;
+  pageSizeOptions = [5, 10, 20, 50];
+
+  // SEARCH FILTER FUNCTION
+  searchText: any;
+  filteredStudentDB: any[] = [];
 
   constructor(
     private jobServ: JobMatchingService,
@@ -35,14 +44,43 @@ export class JobMatchingComponent {
     this.userID = this.userLogged.currentUser?.uid!;
     this.loadingService.showLoading();
     this.jobServ.getCompanySheets().subscribe((response) => {
-      console.log(response);
       this.companySheets = response.companySheets;
       this.companyDB = response.companyDB;
       this.studentDB = response.studentDB;
+      this.filterData();
       this.computeMFEP();
       this.loadingService.hideLoading();
     });
   }
+
+  ngOnChanges(): void {
+    this.filterData();
+  }
+
+  // SEARCH Filter function NEWLY ADDED
+  filterData(): void {
+    const searchKeys = [
+      'firstName',
+      'lastName',
+      'fieldName',
+      'recCompany',
+      'companyRate',
+    ];
+    if (!this.searchText) {
+      this.filteredStudentDB = this.studentDB.slice();
+    } else {
+      this.filteredStudentDB = this.studentDB.filter((student: any) =>
+        searchKeys.some(
+          (key) =>
+            student[key]
+              ?.toString()
+              .toLowerCase()
+              .includes(this.searchText.toLowerCase())
+        )
+      );
+    }
+  }
+
   computeMFEP(): void {
     // Initialize studentsCompanyScores as an empty object
     this.studentsCompanyScores = {};
@@ -75,9 +113,6 @@ export class JobMatchingComponent {
         }
         // Compare company names
         if (outerKey == innerKey) {
-          console.log('Match!');
-          console.log(outerKey);
-          console.log(innerKey);
           // check which is from sheets
           if (moreRows[i][0] == null) {
             lessRows[j]['dbData'] = moreRows[i];
@@ -90,23 +125,6 @@ export class JobMatchingComponent {
         }
       }
     }
-    console.log(this.filteredSheets);
-
-    // Quantify generic company data
-    for (let i = 0; i < this.filteredSheets.length; i++) {
-      // Scores from sheets
-      var key = this.filteredSheets[i][0];
-      // Normalize values
-      var nRelevance = this.filteredSheets[i][6] * this.defaultWeights[0];
-      var nScope = this.filteredSheets[i][10] * this.defaultWeights[1];
-      var nCareer = this.filteredSheets[i][12] * this.defaultWeights[2];
-      this.companyScore = [];
-      this.companiesScores[key] = [];
-      this.companyScore.push(nRelevance);
-      this.companyScore.push(nScope);
-      this.companyScore.push(nCareer);
-      this.companiesScores[key].push(this.companyScore);
-    }
 
     // Quantify student data
     this.studentDB.forEach((student: any) => {
@@ -116,6 +134,43 @@ export class JobMatchingComponent {
       var studentCity = student.addrCity;
       var studentSetup = student.workSetup;
       var studentField = student.fieldID;
+      var studentAllowance = student.allowance;
+      var studentWeights: number[] = [];
+
+      // Determine if criteria is custom/default
+      if (student.prefRank == null) {
+        studentWeights = this.defaultWeights;
+      } else {
+        // Convert prefRank to weights
+        console.log('Meron');
+        student.prefRank.forEach((pref: number) => {
+          switch (pref) {
+            case 1:
+              studentWeights.push(0.2);
+              break;
+            case 2:
+              studentWeights.push(0.16);
+              break;
+            case 3:
+              studentWeights.push(0.15);
+              break;
+            case 4:
+              studentWeights.push(0.14);
+              break;
+            case 5:
+              studentWeights.push(0.13);
+              break;
+            case 6:
+              studentWeights.push(0.12);
+              break;
+            case 7:
+              studentWeights.push(0.1);
+              break;
+            default:
+              break;
+          }
+        });
+      }
 
       // Initialize an empty object to hold scores for each student
       this.studentsCompanyScores[studentID] = {};
@@ -124,11 +179,26 @@ export class JobMatchingComponent {
       student['recCompany'] = '';
       student['companyRate'] = '';
 
-      // Quantify specific company data
+      // Quantify  company data
+      this.companiesScores = [];
       for (let i = 0; i < this.filteredSheets.length; i++) {
+        // Scores from sheets
+        var key = this.filteredSheets[i][0];
+        // Normalize values
+        var nRelevance = this.filteredSheets[i][6] * studentWeights[0];
+        var nScope = this.filteredSheets[i][10] * studentWeights[1];
+        var nCareer = this.filteredSheets[i][12] * studentWeights[2];
+        this.companyScore = [];
+        this.companiesScores[key] = [];
+        this.companyScore.push(nRelevance);
+        this.companyScore.push(nScope);
+        this.companyScore.push(nCareer);
+        this.companiesScores[key].push(this.companyScore);
+
         var companyRegion = this.filteredSheets[i].dbData.addrRegion;
         var companyProvince = this.filteredSheets[i].dbData.addrProvince;
         var companyCity = this.filteredSheets[i].dbData.addrCity;
+        var companyAllowance = this.filteredSheets[i].dbData.hasAllowance;
 
         var key = this.filteredSheets[i].dbData.companyName;
 
@@ -138,6 +208,7 @@ export class JobMatchingComponent {
         var locScore = 1;
         var setupScore = 1;
         var fieldScore = 1;
+        var paidScore = 1;
 
         // Location score calculation
         if (companyCity === studentCity) {
@@ -176,21 +247,42 @@ export class JobMatchingComponent {
           fieldScore = 2;
         }
 
+        // Allowance score calculation
+        if (
+          (studentAllowance == 1 && companyAllowance == true) ||
+          (studentAllowance == 2 && companyAllowance == false)
+        ) {
+          paidScore = 4;
+        } else if (studentAllowance == 3 && companyAllowance == true) {
+          paidScore = 3;
+        } else if (studentAllowance == 3 && companyAllowance == false) {
+          paidScore = 2;
+        }
+
         // Assign normalized scores to the object
         this.studentsCompanyScores[studentID][key]['locScore'] =
-          locScore * this.defaultWeights[3];
+          locScore * studentWeights[3];
         this.studentsCompanyScores[studentID][key]['setupScore'] =
-          setupScore * this.defaultWeights[4];
+          setupScore * studentWeights[4];
         this.studentsCompanyScores[studentID][key]['fieldScore'] =
-          fieldScore * this.defaultWeights[5];
+          fieldScore * studentWeights[5];
+        this.studentsCompanyScores[studentID][key]['paidScore'] =
+          paidScore * studentWeights[6];
+
+        // Sum scores
         this.runningTotal = 0;
-        this.runningTotal = nRelevance + nScope + nCareer;
+        this.runningTotal =
+          this.companiesScores[key][0][0] +
+          this.companiesScores[key][0][1] +
+          this.companiesScores[key][0][2];
         this.runningTotal +=
           this.studentsCompanyScores[studentID][key]['locScore'];
         this.runningTotal +=
           this.studentsCompanyScores[studentID][key]['setupScore'];
         this.runningTotal +=
           this.studentsCompanyScores[studentID][key]['fieldScore'];
+        this.runningTotal +=
+          this.studentsCompanyScores[studentID][key]['paidScore'];
 
         this.studentsCompanyScores[studentID][key].push(
           this.companiesScores[key]
@@ -200,9 +292,6 @@ export class JobMatchingComponent {
       this.studentsCompanyScores[studentID] = this.rankCompanies(
         this.studentsCompanyScores[studentID]
       );
-      // this.studentsCompanyScores[studentID] = this.rankCompanies(
-      //   this.studentsCompanyScores[studentID]
-      // );
 
       student['recField'] = '';
       student['recCompany'] = this.studentsCompanyScores[studentID][0][0];
@@ -212,7 +301,6 @@ export class JobMatchingComponent {
       ).toFixed(2);
       student['companyRate'] = convRate;
     });
-
     console.log(this.studentsCompanyScores);
   }
   rankCompanies(companyList: any): Array<any[]> {
@@ -227,7 +315,11 @@ export class JobMatchingComponent {
     // Sort the company list in descending order based on the value you're accessing
     companiesArray.sort(([, a], [, b]) => b[1] - a[1]);
 
-    // console.log(companiesArray);
+    // Only return top 10 companies
+    if (companiesArray.length > 10) {
+      companiesArray.splice(10);
+    }
+
     return companiesArray;
   }
 
@@ -246,5 +338,14 @@ export class JobMatchingComponent {
       },
     };
     this.router.navigate(['jobMatching/details'], data);
+  }
+
+  getVisibleIndices(): number[] {
+    const startIndex = this.paginator?.pageIndex * this.paginator?.pageSize;
+    const endIndex = startIndex + this.paginator?.pageSize;
+    return Array.from(
+      { length: this.filteredStudentDB.length },
+      (_, index) => index
+    ).slice(startIndex, endIndex);
   }
 }

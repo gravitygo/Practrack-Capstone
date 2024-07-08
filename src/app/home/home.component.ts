@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { BehaviorSubject } from 'rxjs';
+import { LoadingService } from '../services/loading.service';
 
 @Component({
   selector: 'app-home',
@@ -11,9 +12,11 @@ export class HomeComponent {
   private auth: Auth = inject(Auth);
   role: BehaviorSubject<string> = new BehaviorSubject('');
 
-  constructor() {
+  constructor(private loadingService: LoadingService) {
+    this.loadingService.showLoading();
     this.auth.currentUser?.getIdTokenResult(true).then((token) => {
       this.role.next(token.claims['role'] as string);
+      this.loadingService.hideLoading();
     });
   }
 

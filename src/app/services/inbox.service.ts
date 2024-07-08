@@ -20,9 +20,7 @@ export class InboxService {
       return from(this.auth.currentUser.getIdTokenResult(true)).pipe(
         switchMap((token) => {
           return this.http.get<any>(
-            `${this.url}/chats/${this.auth.currentUser!.uid}/${
-              token.claims['role']
-            }`,
+            `${this.url}/chats/${this.auth.currentUser!.uid}`,
             this.httpOptions
           );
         })
@@ -33,7 +31,7 @@ export class InboxService {
 
   getMessages(currentChat: string): Observable<any> {
     return this.http.get<any>(
-      `${this.url}/chats/${currentChat}`,
+      `${this.url}/chatmsgs/${currentChat}`,
       this.httpOptions
     );
   }
@@ -47,6 +45,69 @@ export class InboxService {
     );
   }
 
+  setRead(currentChat: string, uid: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.url}/read/${currentChat}/${uid}`,
+      this.httpOptions
+    );
+  }
+
+  createChat(
+    isGroup: boolean,
+    mainID: number | null,
+    batch: number | null
+  ): Observable<any> {
+    if (this.auth.currentUser !== null) {
+      return from(this.auth.currentUser.getIdTokenResult(true)).pipe(
+        switchMap((token) => {
+          return this.http.post<any>(
+            `${this.url}/chat`,
+            { isGroup: isGroup, mainId: mainID, batch: batch },
+            this.httpOptions
+          );
+        })
+      );
+    }
+    return EMPTY;
+  }
+
+  addMember(chatID: string, userID: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.url}/member`,
+      { chatId: chatID, userId: userID },
+      this.httpOptions
+    );
+  }
+
+  getMembers(currentChat: string): Observable<any> {
+    return this.http.get<any>(
+      `${this.url}/members/${currentChat}`,
+      this.httpOptions
+    );
+  }
+
+  getChatCompany(currentChat: string): Observable<any> {
+    return this.http.get<any>(
+      `${this.url}/company/${currentChat}`,
+      this.httpOptions
+    );
+  }
+
+  getCompaniesWithInterns(batch: number, uid: string): Observable<any> {
+    return this.http.get<any>(
+      `${this.url}/companies/${batch}/${uid}`,
+      this.httpOptions
+    );
+  }
+
+  getInternsOfCompany(companyID: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.url}/interns/${companyID}`,
+      this.httpOptions
+    );
+  }
+
+  /*
   createChat(userID: string): Observable<any> {
     if (this.auth.currentUser !== null) {
       return from(this.auth.currentUser.getIdTokenResult(true)).pipe(
@@ -68,4 +129,5 @@ export class InboxService {
     }
     return EMPTY;
   }
+*/
 }

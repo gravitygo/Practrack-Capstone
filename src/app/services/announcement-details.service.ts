@@ -8,8 +8,7 @@ import { map } from 'rxjs';
   providedIn: 'root',
 })
 export class AnnouncementDetailsService {
-  readonly url = 'http://localhost:3000/announcements/announcementDetails';
-  readonly url2 = 'http://localhost:3000/announcements';
+  readonly url = 'http://localhost:3000/announcements';
 
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
@@ -17,39 +16,46 @@ export class AnnouncementDetailsService {
 
   constructor(private http: HttpClient) {}
 
-  viewAnnouncement(announcementID: number): Observable<any> {
+  // View One Announcement
+
+  viewAnnouncement(
+    announcementID: number,
+    userID: string,
+    role: string
+  ): Observable<any> {
     return this.http.get<any>(
-      `${this.url}/${announcementID}`,
+      `${this.url}/${userID}/${announcementID}/view/${role}`,
       this.httpOptions
     );
   }
 
-  viewAnnouncementStudent(
-    announcementID: number,
-    userID: string
-  ): Observable<any> {
-    return this.http.get<any>(
-      `${this.url2}/${userID}/announcementDetails/${announcementID}`,
+  // CRUD
+
+  setRead(announcementID: number, uid: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.url}/read/${announcementID}/${uid}`,
       this.httpOptions
     );
   }
 
   saveAnnouncement(
     announcementID: number,
-    announcement: Announcement
+    announcement: Announcement,
+    userID: string
   ): Observable<any> {
     return this.http.post<any>(
-      `${this.url}/${announcementID}/save`,
+      `${this.url}/${userID}/${announcementID}/save`,
       announcement,
       this.httpOptions
     );
   }
 
-  deleteAnnouncement(announcementID: number, uid: string): Observable<any> {
-    const params = new HttpParams().set('uid', uid);
-    return this.http.delete<any>(`${this.url}/${announcementID}`, {
-      ...this.httpOptions,
-      params,
-    });
+  deleteAnnouncement(announcementID: number, userID: string): Observable<any> {
+    return this.http.delete<any>(
+      `${this.url}/${userID}/${announcementID}/delete`,
+      {
+        ...this.httpOptions,
+      }
+    );
   }
 }

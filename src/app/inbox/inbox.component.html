@@ -2,22 +2,31 @@
   <div class="flex w-full justify-between">
     <h1 class="text-3xl">Inbox</h1>
     <button
-      class="flex items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+      class="flex items-center justify-center gap-2 rounded bg-lime-700 px-4 py-3 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
       type="button"
       (click)="toggleModal(1)"
     >
-      <p class="text-xs font-medium text-white">New Chat</p>
       <ng-icon
-        name="matStickyNote2Outline"
+        name="matQuestionAnswerOutline"
         size="16px"
         class="mr-0 text-white"
       ></ng-icon>
+      <p class="text-xs font-medium text-white">New Chat</p>
     </button>
   </div>
   <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
 
+  <!-- IF NO CHATS -->
+  <div
+    class="w-full rounded-lg border border-gray-200 bg-white p-4 text-lg text-gray-600 shadow"
+    *ngIf="chats.length == 0"
+  >
+    <i>You currently do not have any existing chat rooms.</i>
+  </div>
+
   <div class="flex grow gap-4">
     <app-chats
+      *ngIf="chats.length > 0"
       class="min-w-1/3 max-w-1/3 h-full max-h-full w-1/3 overflow-y-scroll rounded-lg border border-gray-200 bg-white p-4 shadow"
       [chatList]="chats"
       (chatEvent)="changeChat($event)"
@@ -27,6 +36,9 @@
       [messagesList]="messages"
       [chatId]="chatId.value"
       [chatName]="chatName.value"
+      [isGroup]="isGroup.value"
+      [isRead]="isRead.value"
+      [isActive]="isActive.value"
     ></app-messages>
   </div>
 
@@ -39,18 +51,84 @@
     [hasHeader]="true"
     headerName="New Chat"
   >
-    <form [formGroup]="addForm" (submit)="createChat()">
+    <div
+      *ngIf="(role | async) == 'coordinator'"
+      class="mb-5 mt-5 inline-flex rounded-md shadow-sm"
+      role="group"
+    >
+      <button
+        type="button"
+        (click)="setChatType(false)"
+        [ngClass]="{
+          'bg-gray-300 text-black': !newChatIsGroup,
+          'bg-white text-gray-800': newChatIsGroup
+        }"
+        class="rounded-l-md border border-gray-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        Solo Chat
+      </button>
+      <button
+        type="button"
+        (click)="setChatType(true)"
+        [ngClass]="{
+          'bg-gray-300 text-black': newChatIsGroup,
+          'bg-white text-gray-800': !newChatIsGroup
+        }"
+        class="rounded-r-md border border-gray-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        Group Chat
+      </button>
+    </div>
+
+    <!-- 1-to-1 chat-->
+    <form *ngIf="!newChatIsGroup" [formGroup]="addForm" (submit)="createChat()">
       <div class="input-group mb-4">
         <h4 class="text-base font-medium text-neutral-600">To</h4>
         <select
+          class="block w-full rounded-md bg-gray-50 text-sm text-gray-900 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500"
           formControlName="addTo"
-          class="block w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          placeholder="Select chat recipient"
         >
-          <option *ngFor="let user of composeList" [value]="user.userID">
-            {{ user.fullName }}
+          <option value="" disabled selected>Select chat recipient</option>
+          <option *ngFor="let user of composeList" [value]="user.id">
+            {{ user.name }}
           </option>
         </select>
       </div>
+      <p *ngIf="(role | async) == 'coordinator'" class="mb-5 text-gray-600">
+        <i>Note:</i> Only students from active batches can be selected.
+      </p>
+      <p *ngIf="(role | async) == 'student'" class="mb-5 text-gray-600">
+        <i>Note:</i> You can only create personal chat rooms with the current
+        practicum coordinator.
+      </p>
+      <button
+        class="flex w-full items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+        type="submit"
+      >
+        <p class="text-xs font-medium text-white">Send</p>
+      </button>
+    </form>
+
+    <!-- groupchat -->
+    <form *ngIf="newChatIsGroup" [formGroup]="addForm" (submit)="createChat()">
+      <div class="input-group mb-4">
+        <h4 class="text-base font-medium text-neutral-600">Choose Company</h4>
+        <select
+          class="block w-full rounded-md bg-gray-50 text-sm text-gray-900 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-500"
+          formControlName="addTo"
+          placeholder="Select company"
+        >
+          <option value="" disabled selected>Select company</option>
+          <option *ngFor="let company of companyList" [value]="company.id">
+            {{ company.name }}
+          </option>
+        </select>
+      </div>
+      <p class="mb-5 text-gray-600">
+        <i>Note:</i> Only companies with more than one intern and no existing
+        group chat this term can be selected.
+      </p>
       <button
         class="flex w-full items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
         type="submit"
@@ -60,3 +138,4 @@
     </form>
   </app-modal>
 </app-main-template>
+<app-loading></app-loading>

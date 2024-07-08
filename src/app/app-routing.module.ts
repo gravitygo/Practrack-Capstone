@@ -32,6 +32,11 @@ import { StepsComponent } from './document-hub/student-view/steps/steps.componen
 import { CoordinatorViewComponent } from './document-hub/coordinator-view/coordinator-view.component';
 import { StudentDocumentsComponent } from './document-hub/coordinator-view/student-documents/student-documents.component';
 import { FileViewerComponent } from './document-hub/coordinator-view/file-viewer/file-viewer.component';
+import { CriteriaRankingComponent } from './criteria-ranking/criteria-ranking.component';
+import { BatchComponent } from './batch/batch.component';
+import { SubmissionV2Component } from './document-hub/student-view/submission-v2/submission-v2.component';
+import { DtrComponent } from './document-hub/student-view/dtr/dtr.component';
+import { OnboardingComponent } from './onboarding/onboarding.component';
 
 const redirectUnauthorizedToLogin = () =>
   redirectUnauthorizedTo(['announcements']);
@@ -81,7 +86,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'announcements/:id/coor',
+    path: 'announcements/coor',
     component: AnnouncementsComponent,
     title: 'Announcements',
     canActivate: [AuthGuard],
@@ -93,7 +98,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'announcements/:id',
+    path: 'announcements',
     component: AnnouncementsComponent,
     title: 'Announcements',
     canActivate: [AuthGuard],
@@ -105,7 +110,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'announcements/announcementDetails/:id',
+    path: 'announcements/coor/:id',
     component: AnnouncementDetailsComponent,
     title: 'Announcement Details',
     canActivate: [AuthGuard],
@@ -117,7 +122,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'announcements/:id/announcementDetails/:id',
+    path: 'announcements/:id',
     component: AnnouncementDetailsComponent,
     title: 'Announcement Details',
     canActivate: [AuthGuard],
@@ -213,6 +218,17 @@ const routes: Routes = [
     },
   },
   {
+    path: 'criteriaRanking/:id',
+    component: CriteriaRankingComponent,
+    canActivate: [AuthGuard],
+    data: {
+      title: 'Criteria Ranking',
+      navLoc: 'criteriaRanking',
+      breadcrumb: { alias: 'Criteria Ranking' },
+      authGuardPipe: redirectUnauthorizedToLogin,
+    },
+  },
+  {
     path: 'inbox',
     component: InboxComponent,
     title: 'Inbox',
@@ -227,10 +243,10 @@ const routes: Routes = [
   {
     path: 'account/:id',
     component: AccountComponent,
-    title: 'Account Profile',
+    title: 'Settings',
     canActivate: [AuthGuard],
     data: {
-      title: 'Account Profile',
+      title: 'Settings',
       navLoc: 'account',
       breadcrumb: { alias: 'Account' },
       authGuardPipe: redirectUnauthorizedToLogin,
@@ -294,6 +310,7 @@ const routes: Routes = [
             label: 'Coordinator',
           },
           expectedRole: 'coordinator',
+          tab: 'students',
         },
       },
       {
@@ -319,7 +336,7 @@ const routes: Routes = [
             },
           },
           {
-            path: ':documentID',
+            path: ':acadTermId/:name',
             canActivate: ['roleGuard'],
             component: DocumentViewerComponent,
             data: {
@@ -332,9 +349,21 @@ const routes: Routes = [
         ],
       },
       {
+        path: 'dtr/:id',
+        canActivate: ['roleGuard'],
+        component: DtrComponent,
+        data: {
+          breadcrumb: {
+            alias: 'dtrSubmit',
+            label: 'Submit',
+          },
+          expectedRole: 'student',
+        },
+      },
+      {
         path: 'submit/:id/:atfl',
         canActivate: ['roleGuard'],
-        component: SubmissionComponent,
+        component: SubmissionV2Component,
         data: {
           breadcrumb: {
             alias: 'documentHubSubmit',
@@ -357,30 +386,28 @@ const routes: Routes = [
       },
     ],
   },
-  // {
-  //   path: 'documentHub',
-  //   component: DocumentHubComponent,
-  //   title: 'DocumentHub',
-  //   canActivate: [AuthGuard],
-  //   data: {
-  //     title: 'DocumentHub',
-  //     navLoc: 'documentHub',
-  //     breadcrumb: { alias: 'DocumentHub' },
-  //     authGuardPipe: redirectUnauthorizedToLogin,
-  //   },
-  // },
-  // {
-  //   path: 'documentViewer',
-  //   component: DocumentViewerComponent,
-  //   title: 'DocumentHub',
-  //   canActivate: [AuthGuard],
-  //   data: {
-  //     title: 'DocumentHub',
-  //     navLoc: 'documentViewer',
-  //     breadcrumb: { alias: 'DocumentHub' },
-  //     authGuardPipe: redirectUnauthorizedToLogin,
-  //   },
-  // },
+  {
+    path: 'batch',
+    component: BatchComponent,
+    title: 'Batch',
+    canActivate: ['roleGuard'],
+    data: {
+      title: 'Batch',
+      navLoc: 'batch',
+      breadcrumb: { alias: 'Batch' },
+      expectedRole: 'coordinator',
+    },
+  },
+  {
+    path: 'onboarding',
+    component: OnboardingComponent,
+    canActivate: [AuthGuard],
+    title: 'Onboarding',
+    data: {
+      title: 'Onboarding',
+      navLoc: 'onboarding',
+    },
+  },
 ];
 const settings: ExtraOptions = {
   // enableTracing: true,

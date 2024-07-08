@@ -40,11 +40,18 @@ export class DocumentService {
   patchDocument(
     batch: number,
     date: string,
-    ojtPhase: string
+    ojtPhase: string,
+    fileSubmission: boolean,
+    docuName: string
   ): Observable<any> {
     return this.http.patch<any>(
       `${this.url}/batch/${batch}`,
-      { dueDate: date, ojtPhase: ojtPhase },
+      {
+        dueDate: date,
+        ojtPhase: ojtPhase,
+        fileSubmission: fileSubmission,
+        docuName: docuName,
+      },
       this.httpOptions
     );
   }
@@ -73,6 +80,45 @@ export class DocumentService {
     );
   }
 
+  submitDtr(
+    startDate: Date,
+    endDate: Date,
+    hoursRendered: number,
+    requirementId: number,
+    atfl: number,
+    nextVersion: number
+  ): Observable<any> {
+    return this.http.post<any>(
+      `${this.url}/dtr`,
+      {
+        startDate: startDate,
+        endDate: endDate,
+        hoursRendered: hoursRendered,
+        requirementId: requirementId,
+        atfl: atfl,
+        nextVersion: nextVersion,
+        createdBy: this.auth.currentUser?.uid,
+      },
+      this.httpOptions
+    );
+  }
+  submitDocumentsv2(
+    documentName: string,
+    acadTermFileID: number,
+    version: number
+  ): Observable<any> {
+    return this.http.post<any>(
+      `${this.url}/document/v2`,
+      {
+        version: version,
+        documentName: documentName,
+        filePath: `${this.auth.currentUser?.uid}/${acadTermFileID}`,
+        fileId: acadTermFileID,
+        createdBy: this.auth.currentUser?.uid,
+      },
+      this.httpOptions
+    );
+  }
   submitDocuments(
     documentName: string,
     acadTermFileID: number
@@ -88,13 +134,6 @@ export class DocumentService {
       this.httpOptions
     );
   }
-  getSubmittedDocuments(): Observable<any> {
-    return this.http.get<any>(
-      `${this.url}/oulc/submittedDocuments`,
-      this.httpOptions
-    );
-  }
-
   getSubmittedDocument(documentID: number): Observable<any> {
     return this.http.get<any>(
       `${this.url}/file/${documentID}`,
@@ -124,10 +163,11 @@ export class DocumentService {
 
   getSubmittedDocumentCoordinator(
     user: string,
-    ojtPhase: number
+    ojtPhase: number,
+    acadTerm: number
   ): Observable<any> {
     return this.http.get<any>(
-      `${this.url}/document/${user}/${ojtPhase}`,
+      `${this.url}/document/${user}/${ojtPhase}/${acadTerm}`,
       this.httpOptions
     );
   }
@@ -153,11 +193,52 @@ export class DocumentService {
     userID: string,
     startDate: Date,
     endDate: Date,
-    companyID: number
+    companyID: number,
+    supvName: string,
+    supvEmail: string
   ) {
     return this.http.post<any>(
       `${this.url}/save`,
-      { userID, startDate, endDate, companyID },
+      { userID, startDate, endDate, companyID, supvName, supvEmail },
+      this.httpOptions
+    );
+  }
+
+  resetDeployment(userID: string) {
+    return this.http.post<any>(`${this.url}/reset/${userID}`, this.httpOptions);
+  }
+
+  getOULCDocument() {
+    return this.http.get<any>(`${this.url}/oulc`, this.httpOptions);
+  }
+
+  requestMigrate(userID: string, reasonForMigration: string) {
+    return this.http.post<any>(
+      `${this.url}/request`,
+      { userID, reasonForMigration },
+      this.httpOptions
+    );
+  }
+
+  decisionMigrate(userID: string, decision: string) {
+    return this.http.post<any>(
+      `${this.url}/decision`,
+      { userID, decision },
+      this.httpOptions
+    );
+  }
+
+  getAllSubmittedDocumentRequirement(requirementId: number, userId: string) {
+    return this.http.post<any>(
+      `${this.url}/getAllSubmittedDocumentsRequirement`,
+      { userId: userId, requirementId: requirementId },
+      this.httpOptions
+    );
+  }
+  getAllSubmittedDocument(acadTermID: number, userId: string) {
+    return this.http.post<any>(
+      `${this.url}/getAllSubmittedDocuments`,
+      { userId: userId, acadTermID: acadTermID },
       this.httpOptions
     );
   }

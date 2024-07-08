@@ -17,14 +17,16 @@
           type="text"
           id="company-search"
           class="block w-60 rounded-lg border border-gray-300 bg-gray-50 ps-10 pt-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-          placeholder="Filter"
+          placeholder="Filter by search"
+          [(ngModel)]="searchText"
+          (ngModelChange)="filterData()"
         />
       </div>
     </div>
   </div>
-  <span
-    >Disclaimer: Only companies which have been evaluated & can be found within
-    the company list can be recommended here.</span
+  <span class="text-gray-600"
+    ><i>Note:</i> Only companies which have been evaluated by students and are
+    in the company list will be shown here.</span
   >
   <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
 
@@ -43,39 +45,112 @@
         </tr>
       </thead>
       <tbody>
+        <tr *ngIf="studentDB.length < 1">
+          <td
+            colspan="4"
+            class="border-b bg-white p-3 text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+          >
+            There are currently no existing entries.
+          </td>
+        </tr>
+        <tr *ngIf="filteredStudentDB.length < 1 && studentDB.length >= 1">
+          <td
+            colspan="4"
+            class="border-b bg-white p-3 text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+          >
+            No results.
+          </td>
+        </tr>
         <tr
-          *ngFor="let student of studentDB"
+          *ngFor="let i of getVisibleIndices()"
           class="border-b bg-white text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
         >
           <th
             scope="row"
-            class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
+            class="whitespace-nowrap px-6 py-4 font-medium text-blue-600 hover:text-blue-500 hover:underline hover:underline-offset-4"
+            *ngIf="filteredStudentDB[i].fieldName != null"
           >
-            <button type="button" (click)="viewDetails(student.studentID)">
-              {{ student.firstName }} {{ student.lastName }}
+            <button
+              type="button"
+              class="text-blue-600 hover:text-blue-500 hover:underline hover:underline-offset-4"
+              (click)="viewDetails(filteredStudentDB[i].studentID)"
+            >
+              {{ filteredStudentDB[i].firstName }}
+              {{ filteredStudentDB[i].lastName }}
             </button>
           </th>
-          <td class="px-6 py-4" *ngIf="student.fieldName != null">
-            {{ student.fieldName }}
+          <td
+            class="px-6 py-4 font-medium"
+            *ngIf="filteredStudentDB[i].fieldName == null"
+          >
+            {{ filteredStudentDB[i].firstName }}
+            {{ filteredStudentDB[i].lastName }}
           </td>
-          <td class="px-6 py-4 text-gray-400" *ngIf="student.fieldName == null">
+          <td class="px-6 py-4" *ngIf="filteredStudentDB[i].fieldName != null">
+            {{ filteredStudentDB[i].fieldName }}
+          </td>
+          <td
+            class="px-6 py-4 text-gray-400"
+            *ngIf="filteredStudentDB[i].fieldName == null"
+          >
             No interest set
           </td>
-          <td class="px-6 py-4" *ngIf="student.fieldName != null">
-            {{ student.recCompany }}
+          <td class="px-6 py-4" *ngIf="filteredStudentDB[i].fieldName != null">
+            {{ filteredStudentDB[i].recCompany }}
           </td>
-          <td class="px-6 py-4 text-gray-400" *ngIf="student.fieldName == null">
+          <td
+            class="px-6 py-4 text-gray-400"
+            *ngIf="filteredStudentDB[i].fieldName == null"
+          >
             N/A
           </td>
-          <td class="px-6 py-4" *ngIf="student.fieldName != null">
-            {{ student.companyRate }}%
+          <td class="px-6 py-4" *ngIf="filteredStudentDB[i].fieldName != null">
+            {{ filteredStudentDB[i].companyRate }}%
           </td>
-          <td class="px-6 py-4 text-gray-400" *ngIf="student.fieldName == null">
+          <td
+            class="px-6 py-4 text-gray-400"
+            *ngIf="filteredStudentDB[i].fieldName == null"
+          >
             N/A
           </td>
+          <!-- <td class="px-6 py-4" *ngIf="filteredStudentDB[i].fieldName != null">
+            {{ filteredStudentDB[i].fieldName }}
+          </td>
+          <td
+            class="px-6 py-4 text-gray-400"
+            *ngIf="filteredStudentDB[i].fieldName == null"
+          >
+            No interest set
+          </td>
+          <td class="px-6 py-4" *ngIf="filteredStudentDB[i].fieldName != null">
+            {{ filteredStudentDB[i].recCompany }}
+          </td>
+          <td
+            class="px-6 py-4 text-gray-400"
+            *ngIf="filteredStudentDB[i].fieldName == null"
+          >
+            N/A
+          </td>
+          <td class="px-6 py-4" *ngIf="filteredStudentDB[i].fieldName != null">
+            {{ filteredStudentDB[i].companyRate }}%
+          </td>
+          <td
+            class="px-6 py-4 text-gray-400"
+            *ngIf="filteredStudentDB[i].fieldName == null"
+          >
+            N/A
+          </td> -->
         </tr>
       </tbody>
     </table>
+    <mat-paginator
+      [length]="filteredStudentDB.length"
+      [pageSize]="pageSize"
+      [showFirstLastButtons]="true"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="paginator.pageIndex = $event.pageIndex"
+    >
+    </mat-paginator>
   </div>
 </app-main-template>
 <app-loading></app-loading>

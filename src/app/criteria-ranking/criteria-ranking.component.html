@@ -1,0 +1,181 @@
+<app-main-template>
+  <div class="flex w-full justify-between">
+    <h1 class="text-3xl">Job Matching Details</h1>
+  </div>
+  <hr class="mb-2 mt-2 h-[2px] w-full bg-neutral-300" />
+  <div
+    class="h-full w-[50%] bg-neutral-100 p-4 text-neutral-800 shadow-md dark:bg-gray-700 dark:text-gray-400 sm:rounded-lg"
+  >
+    <div class="mb-6 w-full">
+      <h2 class="text-2xl">Edit Criteria Ranking</h2>
+      <p class="mt-2 text-sm">
+        Rank the following job criteria based on your personal priorities.
+      </p>
+      <p class="text-sm">
+        (1 being the highest priority and 7 being the lowest)
+      </p>
+    </div>
+    <div class="flex items-center justify-center">
+      <form [formGroup]="rankForm" class="mx-16 grow" (submit)="saveRanking()">
+        <div class="flex flex-col">
+          <div class="flex justify-between gap-12">
+            <h3 class="text-lg font-medium">1. Relevance</h3>
+            <select
+              id=""
+              class="block rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+              formControlName="rSelect1"
+            >
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+            </select>
+          </div>
+        </div>
+        <hr class="mb-6 mt-1 h-[2px] w-full bg-neutral-300" />
+        <div class="flex justify-between gap-12">
+          <h3 class="text-lg font-medium">2. Scope</h3>
+          <select
+            id=""
+            class="block rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            formControlName="rSelect2"
+          >
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+        <hr class="mb-6 mt-1 h-[2px] w-full bg-neutral-300" />
+        <div class="flex justify-between gap-12">
+          <h3 class="text-lg font-medium">3. Career Development</h3>
+          <select
+            id=""
+            class="block rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            formControlName="rSelect3"
+          >
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+        <hr class="mb-6 mt-1 h-[2px] w-full bg-neutral-300" />
+        <div class="flex justify-between gap-12">
+          <h3 class="text-lg font-medium">4. Location</h3>
+          <select
+            id=""
+            class="block rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            formControlName="rSelect4"
+          >
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+        <hr class="mb-6 mt-1 h-[2px] w-full bg-neutral-300" />
+        <div class="flex justify-between gap-12">
+          <h3 class="text-lg font-medium">5. Setup Type</h3>
+          <select
+            id=""
+            class="block rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            formControlName="rSelect5"
+          >
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+        <hr class="mb-6 mt-1 h-[2px] w-full bg-neutral-300" />
+        <div class="flex justify-between gap-12">
+          <h3 class="text-lg font-medium">6. Field of Industry</h3>
+          <select
+            id=""
+            class="block rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            formControlName="rSelect6"
+          >
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+        <hr class="mb-6 mt-1 h-[2px] w-full bg-neutral-300" />
+        <div class="flex justify-between gap-12">
+          <h3 class="text-lg font-medium">7. Allowance</h3>
+          <select
+            id=""
+            class="block rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+            formControlName="rSelect7"
+          >
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+        <span
+          class="text-warning-500 text-end text-[12px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              (rankForm.get('rSelect1')!.invalid ||
+                rankForm.get('rSelect2')!.invalid ||
+                rankForm.get('rSelect3')!.invalid ||
+                rankForm.get('rSelect4')!.invalid ||
+                rankForm.get('rSelect5')!.invalid ||
+                rankForm.get('rSelect6')!.invalid ||
+                rankForm.get('rSelect7')!.invalid) &&
+              submitted
+                ? 'block'
+                : 'none'
+          }"
+          >Please fill out all fields.</span
+        >
+        <span
+          class="text-warning-500 text-end text-[12px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display: duplicates && submitted ? 'block' : 'none'
+          }"
+          >Multiple criteria cannot have the same rank.</span
+        >
+        <div class="mt-4 flex items-center justify-center">
+          <button
+            class="flex items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
+            type="submit"
+          >
+            <p class="text-xs font-medium text-white">Save Ranking</p>
+            <ng-icon
+              name="matListAltOutline"
+              size="16px"
+              class="mr-0 text-white"
+            ></ng-icon>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</app-main-template>
+<app-loading></app-loading>

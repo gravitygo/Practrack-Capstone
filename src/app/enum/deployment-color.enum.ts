@@ -5,6 +5,8 @@ export enum DeploymentColor {
 }
 
 export enum RemarksColor {
+  'null' = 'bg-gray-400',
+  'Void' = 'bg-gray-400',
   'No Submission' = 'bg-rose-500',
   'Submitted' = 'bg-blue-500',
   'For Approval' = 'bg-blue-500',
@@ -15,7 +17,9 @@ export enum RemarksColor {
 }
 
 export enum RemarksIcon {
-  'No Submission' = 'matCancelOutline',
+  'null' = 'matBlockOutline',
+  'Void' = 'matBlockOutline',
+  'No Submission' = 'matBlockOutline',
   'Submitted' = 'matRadioButtonCheckedRound',
   'For Approval' = 'matChangeCircleOutline',
   'Approved' = 'matCheckCircleOutline',

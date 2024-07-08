@@ -18,29 +18,65 @@
   <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
 
   <!-- FILTER -->
-  <select
-    [(ngModel)]="batch"
-    (change)="viewAnnouncements(1)"
-    class="block w-60 rounded-lg border border-gray-300 bg-gray-50 pt-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-    *ngIf="(role | async) == 'coordinator'"
-  >
-    <option value="">All</option>
-    <option *ngFor="let option of options" [value]="option.value">
-      {{ option.value }}
-    </option>
-  </select>
+  <div class="flex w-full justify-between gap-4">
+    <select
+      [(ngModel)]="batch"
+      (change)="viewAnnouncements(1)"
+      class="block w-60 rounded-lg border border-gray-300 bg-gray-50 pt-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+      *ngIf="(role | async) == 'coordinator'"
+    >
+      <option value="">All</option>
+      <option *ngFor="let option of options" [value]="option.value">
+        {{ option.value }}
+      </option>
+    </select>
+    <div
+      class="flex w-full items-center justify-end gap-8 text-gray-600"
+      *ngIf="(role | async) == 'coordinator'"
+    >
+      <p>
+        <i>Note:</i> Only announcements for active batches are displayed.
+        Configure batches
+        <b
+          class="cursor-pointer text-blue-600 underline underline-offset-4 hover:text-blue-500"
+          routerLink="/batch"
+          >here.</b
+        >
+      </p>
+    </div>
+  </div>
 
   <div
     class="block w-full rounded-lg border border-gray-200 bg-white p-4 shadow"
   >
+    <!-- No Announcements Message -->
+    <p *ngIf="!allAnnouncements?.length" class="text-center text-gray-500">
+      There are no current announcements yet.
+    </p>
     <!-- Announcement 1 -->
-    <div *ngFor="let announcement of allAnnouncements">
+    <div
+      *ngFor="let announcement of allAnnouncements"
+      class="rounded-t-lg border-b border-neutral-300 p-6"
+      [ngClass]="{
+        'bg-gray-100':
+          (role | async) == 'student' && announcement.isRead == true
+      }"
+    >
       <div class="relative flex w-full justify-between">
-        <a
-          [routerLink]="['announcementDetails/' + announcement.announcementID]"
-        >
-          <h2 class="text-xl font-semibold">{{ announcement.title }}</h2>
-        </a>
+        <div class="flex">
+          <!-- Notif Indicator -->
+          <div
+            *ngIf="(role | async) == 'student' && announcement.isRead == false"
+            class="mr-2 inline-flex h-4 w-4 rounded-full bg-red-500"
+          ></div>
+          <a
+            [routerLink]="[announcement.announcementID]"
+            class="hover:text-blue-600"
+          >
+            <h2 class="text-xl font-semibold">{{ announcement.title }}</h2>
+          </a>
+        </div>
+
         <!-- Dropdown -->
         <button
           id="menu{{ announcement.announcementID }}"
@@ -83,44 +119,50 @@
           </ul>
         </div>
       </div>
-      <div class="flex w-full justify-between">
-        <div class="flex items-center">
-          <h2 class="mr-1 text-xs font-medium text-gray-400">
-            {{ announcement.name }}
-          </h2>
-          <button
-            type="button"
-            class="rounded-full border-2 border-blue-500 bg-gray-100 px-2 text-center text-xs font-medium text-blue-500"
-            disabled
-          >
-            {{ announcement.batch }}
-          </button>
+
+      <div
+        [ngClass]="{
+          'ml-6': (role | async) == 'student' && announcement.isRead == false
+        }"
+      >
+        <div class="flex w-full justify-between">
+          <div class="flex items-center">
+            <h2 class="mr-1 text-xs font-medium text-gray-400">
+              {{ announcement.name }}
+            </h2>
+            <button
+              type="button"
+              class="rounded-full border-2 border-blue-500 bg-gray-100 px-2 text-center text-xs font-medium text-blue-500"
+              disabled
+            >
+              {{ announcement.batch }}
+            </button>
+          </div>
+          <div class="flex-col justify-end italic">
+            <h2
+              *ngIf="
+                announcement.formattedDateCreated &&
+                !announcement.formattedDateEdited
+              "
+              class="mr-1 text-xs font-normal text-gray-400"
+            >
+              Posted on: {{ announcement.formattedDateCreated }}
+            </h2>
+            <h2
+              *ngIf="
+                announcement.formattedDateCreated &&
+                announcement.formattedDateEdited
+              "
+              class="mr-1 text-xs font-normal text-gray-400"
+            >
+              Last edited: {{ announcement.formattedDateEdited }}
+            </h2>
+          </div>
         </div>
-        <div class="flex-col justify-end italic">
-          <h2
-            *ngIf="
-              announcement.formattedDateCreated &&
-              !announcement.formattedDateEdited
-            "
-            class="mr-1 text-xs font-normal text-gray-400"
-          >
-            Posted on: {{ announcement.formattedDateCreated }}
-          </h2>
-          <h2
-            *ngIf="
-              announcement.formattedDateCreated &&
-              announcement.formattedDateEdited
-            "
-            class="mr-1 text-xs font-normal text-gray-400"
-          >
-            Last edited: {{ announcement.formattedDateEdited }}
-          </h2>
-        </div>
+        <p class="mt-2 line-clamp-1 text-sm font-normal">
+          {{ announcement.announcement }}
+        </p>
       </div>
-      <p class="mt-2 line-clamp-1 text-sm font-normal">
-        {{ announcement.announcement }}
-      </p>
-      <hr class="my-4 h-[1px] w-full bg-neutral-300" />
     </div>
   </div>
   <!-- MODALS -->
@@ -171,7 +213,7 @@
               submitted && addForm.get('addAYTermIntake')!.invalid
           }"
         >
-          <option selected>Select AY & Term Intake</option>
+          <option value="" disabled selected>Select AY & Term Intake</option>
           <option *ngFor="let option of options" [value]="option.value">
             {{ option.value }}
           </option>
@@ -253,7 +295,18 @@
           type="text"
           formControlName="editSubject"
           class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+          [ngClass]="{
+            'border-red-600 dark:border-red-500':
+              editForm.get('editSubject')!.invalid
+          }"
         />
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display: editForm.get('editSubject')!.invalid ? 'block' : 'none'
+          }"
+          >Subject should not be empty.</span
+        >
       </div>
       <div class="input-group mb-4">
         <label
@@ -274,6 +327,10 @@
       <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
       <div
         class="mb-4 w-full rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700"
+        [ngClass]="{
+          'border-red-600 dark:border-red-500':
+            editForm.get('editMessage')!.invalid
+        }"
       >
         <div class="rounded-t-lg bg-white px-4 py-2 dark:bg-gray-800">
           <textarea
@@ -283,6 +340,13 @@
             required
             formControlName="editMessage"
           ></textarea>
+          <span
+            class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+            [ngStyle]="{
+              display: editForm.get('editMessage')!.invalid ? 'block' : 'none'
+            }"
+            >Announcement should not be empty.</span
+          >
         </div>
       </div>
       <button
@@ -350,3 +414,4 @@
     </form>
   </app-modal>
 </app-main-template>
+<app-loading></app-loading>

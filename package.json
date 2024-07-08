@@ -24,6 +24,7 @@
     "@dropdowns/psgc": "^1.0.1",
     "@ng-icons/core": "^26.3.0",
     "@ng-icons/material-icons": "^26.3.0",
+    "@ng-select/ng-select": "^11.2.0",
     "@supabase/supabase-js": "^2.41.1",
     "@types/google-one-tap": "^1.2.6",
     "ahp": "^2.4.2",

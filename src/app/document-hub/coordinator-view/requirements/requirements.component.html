@@ -1,17 +1,54 @@
 <div class="flex flex-col gap-6">
-  <div class="flex w-full items-center gap-2">
-    <p>Batch</p>
-    <select
-      #batch
-      name=""
-      id=""
-      (change)="changeList(batch.value)"
-      class="focus: block w-[25%] rounded-md border border-blue-500 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-    >
-      <option *ngFor="let item of academicTerm" [value]="item.id">
-        {{ item.value }}
-      </option>
-    </select>
+  <div class="flex w-full items-baseline justify-between">
+    <div class="flex items-center justify-start gap-6">
+      <div class="relative pb-3">
+        <div
+          class="rtl:inset-r-0 pointer-events-none absolute inset-y-0 start-0 flex items-center pb-3 ps-3"
+        >
+          <ng-icon
+            name="matFilterAltOutline"
+            size="20px"
+            class="mr-0 text-gray-400"
+          ></ng-icon>
+        </div>
+        <input
+          type="search"
+          id="requirement-search"
+          class="block w-60 rounded-lg border border-gray-300 bg-gray-50 ps-10 pt-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          placeholder="Filter by search"
+          [(ngModel)]="searchText"
+          (ngModelChange)="filterData()"
+        />
+      </div>
+      <div class="mr-2 flex items-center gap-2 pb-2">
+        <p>Batch</p>
+        <select
+          #batch
+          name=""
+          id=""
+          (change)="changeList(batch.value)"
+          class="block w-60 rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+        >
+          <option *ngFor="let item of academicTerm" [value]="item.id">
+            {{ item.value }}
+          </option>
+        </select>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-8">
+      <div class="flex items-center gap-2">
+        <div class="published"></div>
+        <p class="legend">Published</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="unpublished"></div>
+        <p class="legend">Unpublished</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="empty"></div>
+        <p class="legend">No details set</p>
+      </div>
+    </div>
   </div>
   <div class="relative w-full shadow-md sm:rounded-lg">
     <table
@@ -21,7 +58,7 @@
         class="text-md bg-neutral-100 text-center text-neutral-800 dark:bg-gray-700 dark:text-gray-400"
       >
         <tr>
-          <th scope="col" class="px-6 py-3">Enable</th>
+          <th scope="col" class="px-6 py-3">Publish</th>
           <th scope="col" class="px-6 py-3">Requirement</th>
           <th scope="col" class="px-6 py-3">Deployment Stage</th>
           <th scope="col" class="px-6 py-3">Due On</th>
@@ -30,49 +67,63 @@
         </tr>
       </thead>
       <tbody>
+        <tr *ngIf="filteredRequirements.length < 1">
+          <td
+            colspan="6"
+            class="border-b bg-white p-3 text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+          >
+            No results.
+          </td>
+        </tr>
         <tr
           class="border-b text-center dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
-          [ngClass]="
-            rows.phase
-              ? 'bg-white hover:bg-gray-50'
-              : 'bg-red-200 hover:bg-red-300'
-          "
-          *ngFor="let rows of requirements; index as i"
+          [ngClass]="{
+            'bg-white hover:bg-gray-50':
+              filteredRequirements[i].phase &&
+              filteredRequirements[i].enabled == true,
+            'bg-red-200 hover:bg-red-300': !filteredRequirements[i].phase,
+            'bg-gray-200 text-gray-500 hover:bg-gray-300':
+              filteredRequirements[i].phase &&
+              filteredRequirements[i].enabled == false
+          }"
+          *ngFor="let i of getVisibleIndices()"
         >
           <td scope="row" class="px-6 py-4">
             <input
               type="checkbox"
               name=""
               id=""
-              [checked]="rows.enabled"
-              (change)="updateCheckboxList(rows.id, $event)"
+              [checked]="filteredRequirements[i].enabled"
+              (change)="updateCheckboxList(filteredRequirements[i].id, $event)"
             />
           </td>
           <th
             scope="row"
             class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
           >
-            {{ rows.requirement }}
+            {{ filteredRequirements[i].requirement }}
           </th>
           <td class="px-6 py-4">
-            {{ rows.phase ?? 'No Phase Yet' }}
+            {{ filteredRequirements[i].phase ?? 'No Phase Yet' }}
           </td>
           <td class="px-6 py-4">
-            {{ rows.dueOn | date: 'MM/dd/yyyy' }}
+            {{ filteredRequirements[i].dueOn | date: 'MM/dd/yyyy' }}
           </td>
           <td class="px-6 py-4">
             <button
               class="inline-flex items-center rounded-lg p-2 text-center text-sm font-medium dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-600"
               type="button"
               (click)="
-                setCurrentRequirementId(rows.id);
+                setCurrentRequirementId(filteredRequirements[i].id);
                 setRequirementValues(
-                  rows.phaseId,
-                  rows.dueOn,
-                  rows.DocumentID,
-                  rows.id
+                  filteredRequirements[i].requirement,
+                  filteredRequirements[i].phaseId,
+                  filteredRequirements[i].dueOn,
+                  filteredRequirements[i].DocumentID,
+                  filteredRequirements[i].isFileSubmission,
+                  filteredRequirements[i].id
                 );
-                toggleModal(4, undefined, rows.requirement)
+                toggleModal(4, undefined, filteredRequirements[i].requirement)
               "
             >
               <ng-icon
@@ -86,6 +137,14 @@
         </tr>
       </tbody>
     </table>
+    <mat-paginator
+      [length]="filteredRequirements.length"
+      [pageSize]="pageSize"
+      [showFirstLastButtons]="true"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="paginator.pageIndex = $event.pageIndex"
+    >
+    </mat-paginator>
   </div>
   <div class="flex justify-end gap-4">
     <button
@@ -135,7 +194,7 @@
   *ngIf="idNum === 4"
   [isOpen]="isModalOpen"
   [hasHeader]="true"
-  [headerName]="'Edit Date: ' + editHeaderName"
+  [headerName]="'Edit Requirement: ' + editHeaderName"
   (eventToggleModal)="toggleModal(4, $event)"
 >
   <form
@@ -143,6 +202,24 @@
     class="flex flex-col gap-6"
     (submit)="updateAcadFile()"
   >
+    <div>
+      <h3 class="text-base font-medium">Requirement Name</h3>
+      <input
+        type="text"
+        class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+        formControlName="docuName"
+      />
+      <p class="text-sm text-gray-600">
+        <i>Note:</i> Editing the name will update this name across all batches.
+      </p>
+
+      <p
+        *ngIf="fileRequirement.value.docuName === 'null' && submitted"
+        class="text-sm font-normal text-red-500"
+      >
+        Input a name.
+      </p>
+    </div>
     <div>
       <h3 class="text-base font-medium">OJT Phase</h3>
       <select
@@ -154,7 +231,7 @@
         </option>
       </select>
       <p
-        *ngIf="fileRequirement.value.phase === 'null'"
+        *ngIf="fileRequirement.value.phase === 'null' && submitted"
         class="text-sm font-normal text-red-500"
       >
         Input a Phase.
@@ -175,7 +252,7 @@
       </div>
 
       <p
-        *ngIf="!currentAcadFileId && !fileValue"
+        *ngIf="!currentAcadFileId && !fileValue && submitted"
         class="text-sm font-normal text-red-500"
       >
         Input a File.
@@ -192,6 +269,16 @@
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
       </mat-form-field>
+      <p
+        *ngIf="fileRequirement.value.date === 'null' && submitted"
+        class="text-sm font-normal text-red-500"
+      >
+        Select a Date.
+      </p>
+    </div>
+    <div class="mb-6 mt-2 flex items-center gap-2">
+      <input type="checkbox" formControlName="fileSubmission" />
+      <h4 class="text-base font-medium text-neutral-600">Checks hours?</h4>
     </div>
     <hr />
 

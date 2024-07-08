@@ -5,6 +5,9 @@ import { Auth } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { ManifestService } from '../services/manifest.service';
+import { LoadingService } from '../services/loading.service';
+import { SupabaseService } from '../services/supabase.service';
+import { SnackbarService } from '../services/snackbar.service';
 
 @Component({
   selector: 'app-announcements',
@@ -36,9 +39,9 @@ export class AnnouncementsComponent {
   });
 
   editForm = this.fb.group({
-    editSubject: [''],
-    editAYTermIntake: [''],
-    editMessage: [''],
+    editSubject: ['', [Validators.required]],
+    editAYTermIntake: ['', [Validators.required]],
+    editMessage: ['', [Validators.required]],
   });
 
   deleteForm = this.fb.group({
@@ -53,21 +56,51 @@ export class AnnouncementsComponent {
     private fb: FormBuilder,
     private announceServ: AnnouncementService,
     private router: Router,
-    private manifestServ: ManifestService
+    private manifestServ: ManifestService,
+    private supabaseService: SupabaseService,
+    private loadingService: LoadingService,
+    private snack: SnackbarService
   ) {
+    var hider = false,
+      tokenAvail = false,
+      optionsAvail = false;
+    this.loadingService.showLoading();
     this.auth.currentUser?.getIdTokenResult(true).then((token) => {
+      tokenAvail = true;
+      hider = tokenAvail && optionsAvail;
+      if (hider) this.loadingService.hideLoading();
       this.role.next(token.claims['role'] as string);
     });
-
     this.manifestServ.getOptions('academicTerm').subscribe((keyValues) => {
+      optionsAvail = true;
+      hider = tokenAvail && optionsAvail;
+      if (hider) this.loadingService.hideLoading();
       this.options = keyValues.reverse();
+    });
+
+    // Listeners
+    this.supabaseService.getAnnouncements().subscribe(() => {
+      this.role.subscribe((role) => {
+        if (role == 'coordinator') {
+          this.viewAnnouncements(1);
+        } else if (role == 'student') {
+          this.viewAnnouncements(2);
+        }
+      });
+    });
+
+    this.supabaseService.getAnnouncementsRead().subscribe(() => {
+      this.role.subscribe((role) => {
+        if (role == 'student') {
+          this.viewAnnouncements(2);
+        }
+      });
     });
   }
 
   ngOnInit(): void {
     this.userID = this.userLogged.currentUser?.uid!;
     this.role.subscribe((role) => {
-      console.log(role);
       if (role == 'coordinator') {
         this.viewAnnouncements(1);
       } else if (role == 'student') {
@@ -93,21 +126,14 @@ export class AnnouncementsComponent {
   }
 
   toggleModal(idNum: number, isModalOpen?: boolean, announcementID?: number) {
-    // Minor bug: If no existing announcements, create announcement modal does not open
-
     if (isModalOpen != null) this.isModalOpen = isModalOpen;
     else this.isModalOpen = !this.isModalOpen;
     this.idNum = idNum;
 
     if (announcementID !== undefined) {
       this.announcementID = announcementID;
-      console.log('TOGGLEMODAL ANNOUNCEMENTID:', this.announcementID);
       this.viewAnnouncement(announcementID);
-    } else {
-      console.log('Announcement ID is undefined');
     }
-
-    console.log(this.isModalOpen);
   }
 
   addAnnouncement() {
@@ -125,22 +151,27 @@ export class AnnouncementsComponent {
             this.userID
           )
           .subscribe(() => {
-            this.router.navigate(['announcements/' + this.userID + '/coor']);
+            this.router.navigate(['announcements/coor']);
             this.addForm.reset();
             this.toggleModal(1, false);
+            this.submitted = false;
             this.viewAnnouncements(1);
+            this.snack.openSnackBar(
+              'Announcement successfully created.',
+              '',
+              'Success'
+            );
           });
-        console.log('Form submitted:', this.addForm.value);
       }
     } catch (err) {
-      console.log('Error: ', err);
+      console.error(err);
     }
   }
 
   viewAnnouncement(announcementID: number) {
     try {
       this.announceServ
-        .viewAnnouncement(announcementID, this.userID)
+        .viewAnnouncement(announcementID, this.userID, this.role.value)
         .subscribe((response) => {
           if (this.idNum == 2) {
             this.editForm.patchValue({
@@ -163,31 +194,37 @@ export class AnnouncementsComponent {
           }
         });
     } catch (err) {
-      console.log('Error: ', err);
+      console.error(err);
     }
   }
 
   saveAnnouncement(announcementID: number) {
     try {
-      console.log('AnnouncementID: ' + announcementID);
-      this.announceServ
-        .saveAnnouncement(
-          announcementID,
-          {
-            title: this.editForm.get('editSubject')?.value!,
-            announcement: this.editForm.get('editMessage')?.value!,
-            batch: this.editForm.get('editAYTermIntake')?.value!,
-            createdBy: this.userLogged.currentUser?.uid!,
-          },
-          this.userID
-        )
-        .subscribe(() => {
-          this.editForm.reset();
-          this.toggleModal(2, false);
-          this.viewAnnouncements(1);
-        });
+      if (this.editForm.valid) {
+        this.announceServ
+          .saveAnnouncement(
+            announcementID,
+            {
+              title: this.editForm.get('editSubject')?.value!,
+              announcement: this.editForm.get('editMessage')?.value!,
+              batch: this.editForm.get('editAYTermIntake')?.value!,
+              createdBy: this.userLogged.currentUser?.uid!,
+            },
+            this.userID
+          )
+          .subscribe(() => {
+            this.editForm.reset();
+            this.toggleModal(2, false);
+            this.viewAnnouncements(1);
+            this.snack.openSnackBar(
+              'Announcement successfully edited.',
+              '',
+              'Success'
+            );
+          });
+      }
     } catch (err) {
-      console.log('Error: ', err);
+      console.error(err);
     }
   }
 
@@ -199,9 +236,14 @@ export class AnnouncementsComponent {
           this.deleteForm.reset();
           this.toggleModal(3, false);
           this.viewAnnouncements(1);
+          this.snack.openSnackBar(
+            'Announcement successfully deleted.',
+            '',
+            'Info'
+          );
         });
     } catch (err) {
-      console.log('Error: ', err);
+      console.error(err);
     }
   }
 
@@ -209,29 +251,21 @@ export class AnnouncementsComponent {
     try {
       if (role == 1) {
         // Coordinator
-        console.log('COOR');
         if (this.batch !== '') {
-          console.log('FILTERED');
           // Filtered
           this.announceServ
-            .viewFilteredAnnouncements(this.userID, this.batch)
+            .viewFilteredAnnouncements(this.batch)
             .subscribe((response) => {
-              console.log(response);
               this.allAnnouncements = response;
             });
         } else {
-          console.log('UNFILTERED');
           // Unfiltered
-          this.announceServ
-            .viewAnnouncements(this.userID)
-            .subscribe((response) => {
-              console.log(response);
-              this.allAnnouncements = response;
-            });
+          this.announceServ.viewAnnouncements().subscribe((response) => {
+            this.allAnnouncements = response;
+          });
         }
       } else if (role == 2) {
         // Student
-        console.log('STUDENT');
         this.announceServ
           .getStudentProfile(this.userID)
           .subscribe((response) => {
@@ -240,13 +274,12 @@ export class AnnouncementsComponent {
             this.announceServ
               .viewBatchAnnouncements(this.userID, batch)
               .subscribe((response) => {
-                console.log(response);
                 this.allAnnouncements = response.announcements;
               });
           });
       }
     } catch (err) {
-      console.log('Error: ', err);
+      console.error(err);
     }
   }
 }

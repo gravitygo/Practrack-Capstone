@@ -3,7 +3,8 @@ export interface CompanyListing {
   pointOfContact: {};
   companyAddress: string;
   natureOfCompany: string;
-  effectivityEndDate: Date;
+  effectivityEndDate: string;
+  hasAllowance: boolean;
   isActivePartner: boolean;
   createdBy: string;
   addrRegion: string;

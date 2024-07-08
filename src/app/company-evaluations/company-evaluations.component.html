@@ -8,12 +8,13 @@
       <div
         class="block w-1/4 rounded-lg border border-gray-200 bg-white p-4 shadow"
       >
-        <h3 class="text-xl font-semibold">Evaluation Respondents</h3>
+        <h3 class="text-xl font-semibold">Evaluation Count</h3>
         <h4 class="text-sm font-medium text-neutral-400">
           {{ termString }}
         </h4>
         <hr class="mb-4 h-[1px] w-full bg-neutral-300" />
         <app-eval-res-donut
+          *ngIf="evalRatio"
           [total]="numStudents"
           [data]="evalRatio"
         ></app-eval-res-donut>
@@ -45,13 +46,22 @@
               class="bg-white text-center dark:border-gray-700 dark:bg-gray-800"
             >
               <td class="px-6 py-2">
-                <app-eval-grade-donut [data]="relevance"></app-eval-grade-donut>
+                <app-eval-grade-donut
+                  *ngIf="relevance"
+                  [data]="relevance"
+                ></app-eval-grade-donut>
               </td>
               <td class="border-x px-6 py-2">
-                <app-eval-grade-donut [data]="scope"></app-eval-grade-donut>
+                <app-eval-grade-donut
+                  *ngIf="scope"
+                  [data]="scope"
+                ></app-eval-grade-donut>
               </td>
               <td class="px-6 py-2">
-                <app-eval-grade-donut [data]="dev"></app-eval-grade-donut>
+                <app-eval-grade-donut
+                  *ngIf="dev"
+                  [data]="dev"
+                ></app-eval-grade-donut>
               </td>
             </tr>
           </tbody>
@@ -66,6 +76,7 @@
       <div class="flex">
         <div class="w-2/3 p-4">
           <app-eval-line
+            *ngIf="chartBatches.length && chartVals.length"
             [labels]="chartBatches"
             [data]="chartVals"
           ></app-eval-line>
@@ -97,7 +108,7 @@
           <mat-paginator
             [length]="evalStats.length"
             [pageSize]="5"
-            [pageSizeOptions]="[5, 10, 15, 20]"
+            [pageSizeOptions]="[5, 10, 20, 50]"
             (page)="paginator.pageIndex = $event.pageIndex"
           >
           </mat-paginator>
@@ -106,3 +117,4 @@
     </div>
   </div>
 </app-main-template>
+<app-loading></app-loading>

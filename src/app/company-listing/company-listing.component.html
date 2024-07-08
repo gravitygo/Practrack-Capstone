@@ -17,7 +17,7 @@
           type="search"
           id="company-search"
           class="block w-60 rounded-lg border border-gray-300 bg-gray-50 ps-10 pt-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-          placeholder="Search for company"
+          placeholder="Filter by search"
           [(ngModel)]="searchText"
           (ngModelChange)="filterData()"
         />
@@ -37,17 +37,18 @@
       </button>
     </div>
   </div>
-  <hr class="mb-2 mt-2 h-[2px] w-full bg-neutral-300" />
+  <hr class="my-2 h-[2px] w-full bg-neutral-300" />
 
+  <!-- Job Matching -->
   <div
-    class="relative overflow-x-auto border-2 border-solid border-lime-700 shadow-md sm:rounded-lg"
+    class="relative mb-5 overflow-x-auto border-2 border-solid border-lime-700 shadow-md sm:rounded-lg"
     *ngIf="(role | async) == 'student'"
   >
     <table
       class="w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
     >
       <thead
-        class="text-md bg-lime-800 text-center text-white dark:bg-gray-700 dark:text-gray-400"
+        class="bg-lime-800 text-center text-white dark:bg-gray-700 dark:text-gray-400"
       >
         <tr>
           <th scope="col" class="px-6 py-3">Job Matching Profile</th>
@@ -58,35 +59,73 @@
       </thead>
       <tbody class="bg-emerald-50">
         <tr
-          class="border-b text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+          class="border-b text-center dark:border-gray-700 dark:bg-gray-800"
+          *ngIf="profile.fieldName != null"
         >
           <th
             scope="row"
             class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
           >
             <button type="button" (click)="viewDetails()">
-              {{ profile.firstName }} {{ profile.lastName }}
+              <p
+                class="text-blue-600 hover:text-blue-500 hover:underline hover:underline-offset-4"
+              >
+                {{ profile.firstName }} {{ profile.lastName }}
+              </p>
             </button>
           </th>
-          <td class="px-6 py-4" *ngIf="profile.fieldName == null">
-            No interest set.
-          </td>
-
-          <td class="px-6 py-4" *ngIf="profile.fieldName != null">
+          <td class="px-6 py-4">
             {{ profile.fieldName }}
           </td>
-          <td class="px-6 py-4" *ngIf="profile.fieldName != null">
+          <td class="px-6 py-4">
             {{ profile.recCompany }}
           </td>
-          <td class="px-6 py-4" *ngIf="profile.fieldName == null">N/A</td>
-          <td class="px-6 py-4" *ngIf="profile.fieldName != null">
-            {{ profile.companyRate }}%
+          <td class="px-6 py-4">{{ profile.companyRate }}%</td>
+        </tr>
+        <tr *ngIf="profile.fieldName == null">
+          <td colspan="4" class="text-center text-base italic text-gray-600">
+            <div class="m-3 flex items-center justify-center gap-6">
+              No information available. Set your interest under your Account
+              profile in order to view the results.
+              <button
+                class="flex items-center justify-center gap-3 rounded-md bg-gray-500 px-2 py-2 hover:bg-gray-400"
+                type="button"
+                (click)="toAccount()"
+              >
+                <p class="ml-2 text-xs font-medium text-white">Set Interest</p>
+                <ng-icon
+                  name="matChevronRightOutline"
+                  size="20px"
+                  class="text-white"
+                ></ng-icon>
+              </button>
+            </div>
           </td>
-          <td class="px-6 py-4" *ngIf="profile.fieldName == null">N/A</td>
         </tr>
       </tbody>
     </table>
   </div>
+
+  <div class="flex w-full justify-between">
+    <!-- Instructions -->
+    <div class="mx-2 w-full">
+      <p class="legend"><i>Click on a row to expand its details.</i></p>
+    </div>
+
+    <!-- Label for isActivePartner -->
+    <div class="mx-2 flex w-full items-center justify-end gap-8">
+      <div class="flex items-center gap-2">
+        <div class="active"></div>
+        <p class="legend">Active</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="inactive"></div>
+        <p class="legend">Inactive</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Company List -->
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table
       class="w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
@@ -95,25 +134,26 @@
         class="text-md bg-neutral-100 text-center text-neutral-800 dark:bg-gray-700 dark:text-gray-400"
       >
         <tr>
-          <th scope="col" class="px-6 py-3">Company Name</th>
-          <th scope="col" class="px-6 py-3">Address</th>
-          <th scope="col" class="px-6 py-3">Nature of Company</th>
-          <th scope="col" class="px-6 py-3">Job Position/s offered</th>
-          <th scope="col" class="px-6 py-3">
+          <th scope="col" class="px-4 py-3">Company Name</th>
+          <th scope="col" class="px-4 py-3">Address</th>
+          <th scope="col" class="px-4 py-3">Nature of Company</th>
+          <th scope="col" class="px-4 py-3">Job Position/s offered</th>
+          <th scope="col" class="px-4 py-3">
             Point of Contact for Application
           </th>
-          <th scope="col" class="px-6 py-3">Work Setup</th>
-          <th scope="col" class="px-6 py-3">Effectivity End Date</th>
+          <th scope="col" class="px-4 py-3">Work Setup</th>
+          <th scope="col" class="px-4 py-3">Effectivity End Date</th>
+          <th scope="col" class="px-2 py-3">Allowance</th>
           <th
             scope="col"
-            class="px-6 py-3"
+            class="px-2 py-3"
             *ngIf="(role | async) == 'coordinator'"
           >
             Edit
           </th>
           <th
             scope="col"
-            class="px-6 py-3"
+            class="px-2 py-3"
             *ngIf="(role | async) == 'coordinator'"
           >
             Delete
@@ -122,167 +162,235 @@
       </thead>
       <!-- BODY -->
       <tbody>
-        <ng-container *ngFor="let companylist of paginatedCompanyListing">
+        <tr *ngIf="allCompanyListing.length < 1">
+          <td
+            colspan="10"
+            class="border-b bg-white p-3 text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+          >
+            There are currently no existing companies.
+          </td>
+        </tr>
         <tr
-          class="border-t bg-white text-center dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
-          [ngClass]="{
-            'past-date': isPastDate(companylist.formattedEffectivityEndDate),
-            'expanded': companylist.expanded
-          }"
-           (click)="toggleRowExpansion(companylist)"
+          *ngIf="
+            filteredCompanyListing.length < 1 && allCompanyListing.length >= 1
+          "
         >
-          <th
-            scope="row"
-            class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white"
-          >
-            {{ companylist.companyName }}
-          </th>
-          <td class="relative block px-6 py-6 w-40 max-w-40">
-            <div class="overflow-hidden truncate">
-              {{ companylist.companyAddress }}
-            </div>
-          </td>
-          <td class="px-6 py-4">{{ companylist.natureofcompanystr }}</td>
-          <td class="px-6 py-4">
-            <span *ngFor="let job of companylist.jobs.jobs; let last = last"
-              >{{ job.jobTitle }}<span *ngIf="!last">, </span>
-            </span>
-          </td>
-
-          <td class="px-6 py-4">
-            <span *ngIf="companylist.pointOfContact.contacts">
-              <div
-                *ngFor="
-                  let phone of companylist.pointOfContact.contacts[0]?.phone
-                "
-              >
-                <span>{{ phone }}</span>
-              </div>
-              <div
-                *ngFor="
-                  let email of companylist.pointOfContact.contacts[1]?.email
-                "
-              >
-                <span>{{ email }}</span>
-              </div>
-              <div
-                *ngFor="
-                  let website of companylist.pointOfContact.contacts[2]?.website
-                "
-              >
-                <span>{{ website }}</span>
-              </div>
-            </span>
-          </td>
-          <td class="px-6 py-4">{{ companylist.worksetupstr }}</td>
-          <td class="px-6 py-4">
-            {{ companylist.formattedEffectivityEndDate }}
-          </td>
           <td
-            class="items-center justify-center px-6 py-4"
-            *ngIf="(role | async) == 'coordinator'"
+            colspan="10"
+            class="border-b bg-white p-3 text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
           >
-            <button
-              id="edit{{ companylist.companyID }}"
-              class="px-2 py-1"
-              type="button"
-              (click)="toggleModal(2, undefined, companylist.companyID)"
-            >
-              <ng-icon
-                name="matEditOutline"
-                size="24px"
-                class="mr-0 text-gray-500 hover:text-gray-900"
-              ></ng-icon>
-            </button>
-          </td>
-          <td
-            class="items-center justify-center px-6 py-4"
-            *ngIf="(role | async) == 'coordinator'"
-          >
-            <button
-              id="delete{{ companylist.companyID }}"
-              class="px-2 py-1"
-              type="button"
-              (click)="toggleModal(3, undefined, companylist.companyID)"
-            >
-              <ng-icon
-                name="matDeleteOutline"
-                size="24px"
-                class="mr-0 text-gray-500 hover:text-gray-900"
-              ></ng-icon>
-            </button>
+            No results.
           </td>
         </tr>
-        <ng-container *ngIf="companylist.expanded">
-          <!-- Expanded row content goes here -->
+        <ng-container *ngFor="let index of getVisibleIndices()">
           <tr
-          class="border-b bg-white text-center dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
-        >
-          <th>
-          </th>
-          <td class="relative block px-6 py-6 w-40 max-w-40">
-           
-              {{ companylist.companyAddress }}
-          </td>
-          <td></td>
-          <td class="px-6 py-4">
-            <span *ngFor="let job of companylist.jobs.jobs; let last = last"
-              >{{ job.jobTitle }}<span *ngIf="!last">, </span>
-            </span>
-          </td>
+            class="border-t bg-white text-center dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+            [ngClass]="{
+              'past-date': isPastDate(
+                filteredCompanyListing[index].formattedEffectivityEndDate
+              ),
+              expanded: filteredCompanyListing[index].expanded
+            }"
+            (click)="toggleRowExpansion(filteredCompanyListing[index])"
+          >
+            <th
+              scope="row"
+              class="whitespace-nowrap px-4 py-3 font-medium text-gray-900 dark:text-white"
+            >
+              {{ filteredCompanyListing[index].companyName }}
+            </th>
 
-          <td class="px-6 py-4">
-            <span *ngIf="companylist.pointOfContact.contacts">
+            <!-- Expands -->
+            <td class="w-60 max-w-60 px-4 py-3">
               <div
-                *ngFor="
-                  let phone of companylist.pointOfContact.contacts[0]?.phone
+                [ngClass]="{
+                  'overflow-hidden truncate':
+                    !filteredCompanyListing[index].expanded
+                }"
+              >
+                {{ filteredCompanyListing[index].companyAddress }}
+              </div>
+            </td>
+            <td class="px-4 py-3">
+              {{ filteredCompanyListing[index].natureofcompanystr }}
+            </td>
+
+            <!-- Expands -->
+            <td class="w-60 max-w-60 px-4 py-3">
+              <p
+                [ngClass]="{
+                  'overflow-hidden truncate':
+                    !filteredCompanyListing[index].expanded
+                }"
+              >
+                <span
+                  *ngFor="
+                    let job of filteredCompanyListing[index].jobs.jobs;
+                    let last = last
+                  "
+                >
+                  {{ job.jobTitle }}<span *ngIf="!last">, </span>
+                </span>
+              </p>
+            </td>
+
+            <!-- Expands -->
+            <td class="w-60 max-w-60 px-4 py-3">
+              <p
+                [ngClass]="{
+                  'overflow-hidden truncate':
+                    !filteredCompanyListing[index].expanded
+                }"
+              >
+                <span
+                  *ngIf="filteredCompanyListing[index].pointOfContact.contacts"
+                >
+                  <span
+                    *ngFor="
+                      let phone of filteredCompanyListing[index].pointOfContact
+                        .contacts[0]?.phone;
+                      let last = last
+                    "
+                  >
+                    <span
+                      >{{ phone
+                      }}<span
+                        *ngIf="!last && !filteredCompanyListing[index].expanded"
+                        >,
+                      </span>
+                      <span
+                        *ngIf="last || filteredCompanyListing[index].expanded"
+                        ><br
+                      /></span>
+                    </span>
+                  </span>
+                  <span
+                    *ngFor="
+                      let email of filteredCompanyListing[index].pointOfContact
+                        .contacts[1]?.email;
+                      let last = last
+                    "
+                  >
+                    <span
+                      >{{ email
+                      }}<span
+                        *ngIf="!last && !filteredCompanyListing[index].expanded"
+                        >,
+                      </span>
+                      <span
+                        *ngIf="last || filteredCompanyListing[index].expanded"
+                        ><br
+                      /></span>
+                    </span>
+                  </span>
+                  <span
+                    *ngFor="
+                      let website of filteredCompanyListing[index]
+                        .pointOfContact.contacts[2]?.website;
+                      let last = last
+                    "
+                  >
+                    <span
+                      >{{ website
+                      }}<span
+                        *ngIf="!last && !filteredCompanyListing[index].expanded"
+                        >, </span
+                      ><span
+                        *ngIf="!last && filteredCompanyListing[index].expanded"
+                        ><br /></span
+                    ></span>
+                  </span>
+                </span>
+              </p>
+            </td>
+            <td class="px-4 py-3">
+              {{ filteredCompanyListing[index].worksetupstr }}
+            </td>
+            <td class="px-4 py-3">
+              {{ filteredCompanyListing[index].formattedEffectivityEndDate }}
+            </td>
+            <td class="px-4 py-3">
+              <ng-icon
+                name="matCheckCircleRound"
+                size="24px"
+                class="mr-0 text-emerald-500"
+                *ngIf="filteredCompanyListing[index].hasAllowance"
+              ></ng-icon>
+              <ng-icon
+                name="matDangerousRound"
+                size="24px"
+                class="mr-0 text-red-500"
+                *ngIf="!filteredCompanyListing[index].hasAllowance"
+              ></ng-icon>
+            </td>
+            <td
+              class="items-center justify-center px-4 py-3"
+              *ngIf="(role | async) == 'coordinator'"
+            >
+              <button
+                id="edit{{ filteredCompanyListing[index].companyID }}"
+                class="px-2 py-1"
+                type="button"
+                (click)="
+                  toggleModal(
+                    2,
+                    undefined,
+                    filteredCompanyListing[index].companyID
+                  )
                 "
               >
-                <span>{{ phone }}</span>
-              </div>
-              <div
-                *ngFor="
-                  let email of companylist.pointOfContact.contacts[1]?.email
+                <ng-icon
+                  name="matEditOutline"
+                  size="24px"
+                  class="mr-0 text-gray-500 hover:text-gray-900"
+                ></ng-icon>
+              </button>
+            </td>
+            <td
+              class="items-center justify-center px-4 py-3"
+              *ngIf="(role | async) == 'coordinator'"
+            >
+              <button
+                id="delete{{ filteredCompanyListing[index].companyID }}"
+                class="px-2 py-1"
+                type="button"
+                (click)="
+                  toggleModal(
+                    3,
+                    undefined,
+                    filteredCompanyListing[index].companyID
+                  )
                 "
               >
-                <span>{{ email }}</span>
-              </div>
-              <div
-                *ngFor="
-                  let website of companylist.pointOfContact.contacts[2]?.website
-                "
-              >
-                <span>{{ website }}</span>
-              </div>
-            </span>
-          </td>
-          <td></td>
-          <td>  
-          </td>
-          <td class="items-center justify-center px-6 py-4">
-          </td>
-          <td class="items-center justify-center px-6 py-4">
-          </td>
-        </tr>
+                <ng-icon
+                  name="matDeleteOutline"
+                  size="24px"
+                  class="mr-0 text-gray-500 hover:text-gray-900"
+                ></ng-icon>
+              </button>
+            </td>
+          </tr>
         </ng-container>
-      </ng-container>
       </tbody>
     </table>
     <mat-paginator
       [length]="filteredCompanyListing.length"
       [pageSize]="pageSize"
       [showFirstLastButtons]="true"
-      [pageSizeOptions]="[5, 10, 15]"
-      (page)="handlePageEvent($event)"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="paginator.pageIndex = $event.pageIndex"
     >
     </mat-paginator>
   </div>
 
   <!-- MODALS -->
   <!-- Add Company -->
-  <app-modal *ngIf="idNum === 1" [isOpen]="isModalOpen">
-    <h1 class="mb-4 grow text-center text-xl font-semibold">Add Company</h1>
-
+  <app-modal
+    *ngIf="idNum === 1"
+    [isOpen]="isModalOpen"
+    [hasHeader]="true"
+    headerName="Add Company"
+  >
     <form [formGroup]="addForm" (submit)="addCompany()">
       <div class="input-group mb-4">
         <h4 class="text-base font-medium text-neutral-600">Company Name</h4>
@@ -292,6 +400,14 @@
           formControlName="addName"
           class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
         />
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              addForm.get('addName')!.invalid && submitted ? 'block' : 'none'
+          }"
+          >Please input the company name.</span
+        >
       </div>
       <div class="input-group mb-4">
         <h4 class="text-base font-medium text-neutral-600">Address</h4>
@@ -301,6 +417,14 @@
           formControlName="addAddress"
           class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
         />
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              addForm.get('addAddress')!.invalid && submitted ? 'block' : 'none'
+          }"
+          >Please input the company address.</span
+        >
       </div>
       <!-- SELECT REGION DIV -->
       <div class="input-group mb-4">
@@ -317,6 +441,14 @@
             {{ region.designation }}
           </option>
         </select>
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              addForm.get('addRegion')!.invalid && submitted ? 'block' : 'none'
+          }"
+          >Please select a region.</span
+        >
       </div>
       <!-- SELECT PROVINCE DIV -->
       <div class="input-group mb-4">
@@ -333,6 +465,16 @@
             {{ province.name }}
           </option>
         </select>
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              addForm.get('addProvince')!.invalid && submitted
+                ? 'block'
+                : 'none'
+          }"
+          >Please select a province.</span
+        >
       </div>
       <!-- SELECT CITY DIV -->
       <div class="input-group mb-4">
@@ -346,6 +488,14 @@
             {{ city.name }}
           </option>
         </select>
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              addForm.get('addCity')!.invalid && submitted ? 'block' : 'none'
+          }"
+          >Please select a city.</span
+        >
       </div>
       <!-- NATURE OF COMPANY DIV -->
       <div class="input-group mb-4">
@@ -362,6 +512,14 @@
             {{ field.fieldName }}
           </option>
         </select>
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              addForm.get('addNature')!.invalid && submitted ? 'block' : 'none'
+          }"
+          >Please select the company nature.</span
+        >
       </div>
       <!-- WORK SETUP DIV -->
       <div class="input-group mb-4">
@@ -376,6 +534,16 @@
             {{ type.value }}
           </option>
         </select>
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              addForm.get('addWorkSetup')!.invalid && submitted
+                ? 'block'
+                : 'none'
+          }"
+          >Please select the company work setup.</span
+        >
       </div>
       <div class="input-group mb-4">
         <h4 class="text-base font-medium text-neutral-600">
@@ -397,6 +565,20 @@
           ></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              addForm.get('addEndDate')!.invalid && submitted ? 'block' : 'none'
+          }"
+          >Please enter an effectivity end date.</span
+        >
+      </div>
+      <div class="mb-6 mt-2 flex items-center gap-2">
+        <input type="checkbox" formControlName="addAllowance" />
+        <h4 class="text-base font-medium text-neutral-600">
+          Allowance provided?
+        </h4>
       </div>
       <div class="input-group mb-4" formArrayName="addJobs">
         <h4 class="text-base font-medium text-neutral-600">
@@ -415,7 +597,7 @@
             *ngFor="let job of jobControls; let i = index"
           >
             <select
-              class="mb-2 w-full rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+              class="mb-2 w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
               [formControlName]="i"
               placeholder="Enter job position offered"
             >
@@ -429,7 +611,7 @@
 
             <button
               type="button"
-              class="dark:border-neutral-60 mb-2 rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs"
+              class="dark:border-neutral-60 mb-2 rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-xs"
               (click)="removeJob(i, 1)"
             >
               X
@@ -446,7 +628,6 @@
             <select
               id="addContact"
               class="block w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-1 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-              formControlName="addContact"
               #selectedOption
             >
               <option value="" disabled selected>Select contact type</option>
@@ -471,11 +652,11 @@
               [type]="selectedContact[i] === 'phone' ? 'number' : 'text'"
               type="text"
               [formControlName]="i"
-              class="mb-2 w-full rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+              class="mb-2 w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
             />
             <button
               type="button"
-              class="dark:border-neutral-60 mb-2 rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs"
+              class="dark:border-neutral-60 mb-2 rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-xs"
               (click)="removeContact(i, 1)"
             >
               X
@@ -496,10 +677,10 @@
   <app-modal
     *ngIf="idNum === 2"
     [isOpen]="isModalOpen"
+    [hasHeader]="true"
+    headerName="Edit Company"
     (eventToggleModal)="toggleModal(2, $event, companyID)"
   >
-    <h1 class="mb-4 grow text-center text-xl font-semibold">Edit Company</h1>
-
     <form [formGroup]="editForm" (submit)="saveCompany(companyID)">
       <div class="input-group mb-4">
         <h4 class="text-base font-medium text-neutral-600">Company Name</h4>
@@ -509,6 +690,14 @@
           formControlName="editName"
           class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
         />
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              editForm.get('editName')!.invalid && submitted ? 'block' : 'none'
+          }"
+          >Please input the Company Name.</span
+        >
       </div>
       <div class="input-group mb-4">
         <h4 class="text-base font-medium text-neutral-600">Address</h4>
@@ -518,6 +707,16 @@
           formControlName="editAddress"
           class="border-[1px]rounded-md w-full rounded border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
         />
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              editForm.get('editAddress')!.invalid && submitted
+                ? 'block'
+                : 'none'
+          }"
+          >Please input the company address.</span
+        >
       </div>
       <!-- SELECT REGION DIV -->
       <div class="input-group mb-4">
@@ -534,6 +733,16 @@
             {{ region.designation }}
           </option>
         </select>
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              editForm.get('editRegion')!.invalid && submitted
+                ? 'block'
+                : 'none'
+          }"
+          >Please select a Region.</span
+        >
       </div>
       <!-- SELECT PROVINCE DIV -->
       <div class="input-group mb-4">
@@ -550,6 +759,16 @@
             {{ province.name }}
           </option>
         </select>
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              editForm.get('editProvince')!.invalid && submitted
+                ? 'block'
+                : 'none'
+          }"
+          >Please input a Province.</span
+        >
       </div>
       <!-- SELECT CITY DIV -->
       <div class="input-group mb-4">
@@ -578,6 +797,16 @@
             {{ field.fieldName }}
           </option>
         </select>
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              editForm.get('editNature')!.invalid && submitted
+                ? 'block'
+                : 'none'
+          }"
+          >Please input the Nature of Company.</span
+        >
       </div>
       <div class="input-group mb-4">
         <h4 class="text-base font-medium text-neutral-600">Work Setup</h4>
@@ -591,6 +820,16 @@
             {{ type.value }}
           </option>
         </select>
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              editForm.get('editWorkSetup')!.invalid && submitted
+                ? 'block'
+                : 'none'
+          }"
+          >Please input the Work Setup.</span
+        >
       </div>
       <div class="input-group mb-4">
         <h4 class="text-base font-medium text-neutral-600">
@@ -612,6 +851,32 @@
           ></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              editForm.get('editEndDate')!.invalid && submitted
+                ? 'block'
+                : 'none'
+          }"
+          >Please input the End Date.</span
+        >
+      </div>
+      <div class="mb-6 mt-2 flex items-center gap-2">
+        <input type="checkbox" formControlName="editAllowance" />
+        <h4 class="text-base font-medium text-neutral-600">
+          Allowance provided?
+        </h4>
+        <span
+          class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+          [ngStyle]="{
+            display:
+              editForm.get('editAllowance')!.invalid && submitted
+                ? 'block'
+                : 'none'
+          }"
+          >Please input Allowance.</span
+        >
       </div>
       <div class="input-group mb-4" formArrayName="editJobs">
         <h4 class="text-base font-medium text-neutral-600">
@@ -630,7 +895,7 @@
             *ngFor="let job of jobControlsEdit; let i = index"
           >
             <select
-              class="mb-2 w-full rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+              class="mb-2 w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
               [formControlName]="i"
               placeholder="Enter job position offered"
             >
@@ -642,7 +907,7 @@
 
             <button
               type="button"
-              class="dark:border-neutral-60 mb-2 rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs"
+              class="dark:border-neutral-60 mb-2 rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-xs"
               (click)="removeJob(i, 2)"
             >
               X
@@ -684,11 +949,11 @@
               [type]="selectedContact[i] === 'phone' ? 'number' : 'text'"
               type="text"
               [formControlName]="i"
-              class="mb-2 w-full rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
+              class="mb-2 w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-xs dark:border-neutral-600"
             />
             <button
               type="button"
-              class="dark:border-neutral-60 mb-2 rounded rounded-md border border-[1px] border-gray-300 bg-gray-50 px-3 py-2 text-xs"
+              class="dark:border-neutral-60 mb-2 rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-xs"
               (click)="removeContact(i, 2)"
             >
               X
@@ -697,23 +962,6 @@
         </div>
       </div>
       <hr class="mb-6 mt-6 h-[2px] w-full bg-neutral-300" />
-      <!-- <div
-        class="mb-4 flex items-center rounded border border-gray-200 ps-4 dark:border-gray-700"
-      >
-        <input
-          id="deleteCheckbox"
-          type="checkbox"
-          value=""
-          formControlName="deleteCheckbox"
-          name="delete-checkbox"
-          class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-        />
-        <label
-          for="bordered-checkbox-1"
-          class="ms-2 py-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-          >Delete this company from list</label
-        >
-      </div> -->
       <button
         class="mb-4 flex w-full items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
         type="submit"
@@ -728,16 +976,44 @@
   <app-modal
     *ngIf="idNum === 3"
     [isOpen]="isModalOpen"
+    [hasHeader]="true"
+    headerName="Delete Company"
     (eventToggleModal)="toggleModal(3, $event, companyID)"
   >
-    <h1 class="mb-2 grow text-center text-xl font-semibold">Delete Company</h1>
     <div class="text-center">
       <p class="text-sm font-normal">
         Are you sure in deleting this company? This cannot be undone.
       </p>
     </div>
     <hr class="mb-4 mt-2 h-[2px] w-full bg-neutral-300" />
-    <form (submit)="deleteCompany(companyID)">
+    <form [formGroup]="deleteForm" (submit)="deleteCompany(companyID)">
+      <div class="mb-3 ml-6 mr-6 flex place-items-center">
+        <h3 class="grow text-base font-medium">Company</h3>
+        <input
+          value="deleteCompany"
+          type="text"
+          class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+          formControlName="deleteCompany"
+        />
+      </div>
+      <div class="mb-3 ml-6 mr-6 flex place-items-center">
+        <h3 class="grow text-base font-medium">Address</h3>
+        <input
+          value="deleteAddress"
+          type="text"
+          class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+          formControlName="deleteAddress"
+        />
+      </div>
+      <div class="mb-3 ml-6 mr-6 flex place-items-center">
+        <h3 class="mb-2 grow text-base font-medium">Effectivity End Date</h3>
+        <input
+          value=""
+          type="text"
+          class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+          formControlName="deleteEndDate"
+        />
+      </div>
       <button
         class="mt-6 flex w-full items-center justify-center gap-3 rounded bg-lime-700 px-6 py-2 hover:bg-lime-600 dark:bg-lime-700 dark:hover:bg-lime-600"
         type="submit"
@@ -747,5 +1023,51 @@
     </form>
   </app-modal>
   <!-- END CONFIRM DELETE MODAL -->
+
+  <!-- ACTIVE STUDENTS/CHATS MODAL -->
+  <app-modal
+    *ngIf="idNum === 4"
+    [isOpen]="isModalOpen"
+    [hasHeader]="true"
+    headerName="Delete Company"
+    (eventToggleModal)="toggleModal(4, $event, companyID)"
+  >
+    <div class="my-4 text-center">
+      <p class="text-base font-normal">
+        Deletion of <b>{{ companyToDelete }}</b> unsuccessful.
+      </p>
+      <p class="text-base font-normal">
+        Please make the necessary changes if you wish to delete this company.
+      </p>
+    </div>
+    <div class="mb-4 ml-6 flex flex-col">
+      <div
+        *ngIf="activeStudents.length > 0"
+        class="mb-2 rounded-lg border border-emerald-700 bg-emerald-50 p-4"
+      >
+        <p class="text-lg text-emerald-700"><b>Active Students:</b></p>
+        <p>These are students currently deployed to this company.</p>
+
+        <div *ngFor="let student of activeStudents" class="ml-4 mt-2 text-sm">
+          <p>
+            &#x2022; {{ student.fullname }} <i>({{ student.degreeCode }})</i>
+          </p>
+        </div>
+      </div>
+      <div
+        *ngIf="activeChats.length > 0"
+        class="mb-2 rounded-lg border border-amber-700 bg-amber-50 p-4"
+      >
+        <p class="text-lg text-amber-700"><b>Active Chats:</b></p>
+        <p>
+          These are group chats for the company with students who have not yet
+          finished their practicum.
+        </p>
+        <div *ngFor="let chat of activeChats" class="ml-4 mt-2 text-sm">
+          <p>&#x2022; {{ chat.groupname }}</p>
+        </div>
+      </div>
+    </div>
+  </app-modal>
 </app-main-template>
 <app-loading></app-loading>

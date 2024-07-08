@@ -82,9 +82,11 @@ export class CompanyEvaluationsComponent {
             this.evalCounts = response[2];
             this.evalRatio = [
               this.evalCounts,
-              this.numStudents - this.evalCounts,
+              this.numStudents - this.evalCounts < 0
+                ? 0
+                : this.numStudents - this.evalCounts,
             ];
-          
+
             // Overall Evaluations
             this.evalStats = response[3].stats;
             if (this.chartLimit > this.evalStats.length) {
@@ -95,24 +97,11 @@ export class CompanyEvaluationsComponent {
               this.chartVals.push(this.evalStats[i].count);
             }
 
-            /*LOGS
-            console.log(response);
-            console.log(this.grades);
-            console.log(this.relevance);
-            console.log(this.scope);
-            console.log(this.dev);
-            console.log(this.numStudents);
-            console.log(this.evalCounts);
-            console.log(this.evalRatio);
-            console.log(this.evalStats);
-            console.log(this.chartBatches);
-            console.log(this.chartVals);*/
+            this.loadingService.hideLoading();
           });
       });
     } catch (err) {
-      console.log('Error: ', err);
-    } finally {
-      this.loadingService.hideLoading();
+      console.error(err);
     }
   }
 

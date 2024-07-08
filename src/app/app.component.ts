@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import { BreadcrumbService } from 'xng-breadcrumb';
+import { LoadingService } from './services/loading.service';
 
 @Component({
   selector: 'app-root',

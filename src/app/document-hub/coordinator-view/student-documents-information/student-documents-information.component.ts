@@ -11,9 +11,13 @@ export class StudentDocumentsInformationComponent {
   @Input() documentRequirements!: {
     requirement: string;
     version: string | undefined | null;
+    dueDate: Date | undefined | null;
     submittedOn: Date | undefined | null;
     status: RemarksStatus;
     documentID: number | undefined | null;
+    acadTermFileID: number;
+    isFileSubmission: boolean;
+    Requirement: string | undefined | null;
   }[];
   remarksColor = RemarksColor;
   remarksIcon = RemarksIcon;

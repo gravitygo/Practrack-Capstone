@@ -15,40 +15,55 @@ export class AnnouncementService {
 
   constructor(private http: HttpClient) {}
 
-  addAnnouncement(announcement: Announcement, userID: string): Observable<any> {
-    return this.http.post<any>(
-      `${this.url}/${userID}/coor/addAnnouncement`,
-      announcement,
+  // View All Announcements = STUDENT
+
+  getStudentProfile(userID: string): Observable<any> {
+    return this.http.get<any>(
+      `${this.url}/${userID}/student`,
       this.httpOptions
     );
-  }
-
-  viewAnnouncements(userID: string): Observable<any> {
-    return this.http
-      .get<any>(`${this.url}/${userID}/coor`, this.httpOptions)
-      .pipe(map((i) => i.announcements));
-  }
-
-  viewFilteredAnnouncements(userID: string, batch: string): Observable<any> {
-    return this.http
-      .get<any>(`${this.url}/${userID}/coor/${batch}`, this.httpOptions)
-      .pipe(map((i) => i.announcements));
   }
 
   viewBatchAnnouncements(userID: string, batch: string): Observable<any> {
     return this.http.get<any>(
-      `${this.url}/${userID}/${batch}`,
+      `${this.url}/${userID}/student/${batch}`,
       this.httpOptions
     );
   }
 
-  getStudentProfile(userID: string): Observable<any> {
-    return this.http.get<any>(`${this.url}/${userID}`, this.httpOptions);
+  // View All Announcements = COOR
+
+  viewAnnouncements(): Observable<any> {
+    return this.http
+      .get<any>(`${this.url}/coor`, this.httpOptions)
+      .pipe(map((i) => i.announcements));
   }
 
-  viewAnnouncement(announcementID: number, userID: string): Observable<any> {
+  viewFilteredAnnouncements(batch: string): Observable<any> {
+    return this.http
+      .get<any>(`${this.url}/coor/${batch}`, this.httpOptions)
+      .pipe(map((i) => i.announcements));
+  }
+
+  // View One Announcement
+
+  viewAnnouncement(
+    announcementID: number,
+    userID: string,
+    role: string
+  ): Observable<any> {
     return this.http.get<any>(
-      `${this.url}/${userID}/coor/${announcementID}/view`,
+      `${this.url}/${userID}/${announcementID}/view/${role}`,
+      this.httpOptions
+    );
+  }
+
+  // CRUD
+
+  addAnnouncement(announcement: Announcement, userID: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.url}/${userID}/add`,
+      announcement,
       this.httpOptions
     );
   }
@@ -59,15 +74,18 @@ export class AnnouncementService {
     userID: string
   ): Observable<any> {
     return this.http.post<any>(
-      `${this.url}/${userID}/coor/${announcementID}/save`,
+      `${this.url}/${userID}/${announcementID}/save`,
       announcement,
       this.httpOptions
     );
   }
 
-  deleteAnnouncement(announcementID: number, uid: string): Observable<any> {
-    return this.http.delete<any>(`${this.url}/${uid}/coor/${announcementID}`, {
-      ...this.httpOptions,
-    });
+  deleteAnnouncement(announcementID: number, userID: string): Observable<any> {
+    return this.http.delete<any>(
+      `${this.url}/${userID}/${announcementID}/delete`,
+      {
+        ...this.httpOptions,
+      }
+    );
   }
 }

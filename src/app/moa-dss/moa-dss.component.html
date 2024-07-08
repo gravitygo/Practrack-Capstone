@@ -14,9 +14,9 @@
       ></ng-icon>
     </button>
   </div>
-  <span
-    >Only companies which have been evaluated by students and are in the company
-    list will be shown here.</span
+  <span class="text-gray-600"
+    ><i>Note:</i> Only companies which have been evaluated by students and are
+    in the company list will be shown here.</span
   >
   <hr class="mb-4 mt-2 h-[2px] w-full bg-neutral-300" />
   <div
@@ -40,6 +40,43 @@
     </div>
   </div>
   <div *ngIf="configChecker">
+    <!-- SEARCH BY MOA -->
+    <div class="flex w-full justify-between gap-4">
+      <div class="relative mr-2 pb-3">
+        <div
+          class="rtl:inset-r-0 pointer-events-none absolute inset-y-0 start-0 flex items-center pb-3 ps-3"
+        >
+          <ng-icon
+            name="matFilterAltOutline"
+            size="20px"
+            class="mr-0 text-gray-400"
+          ></ng-icon>
+        </div>
+        <input
+          type="search"
+          id="company-search"
+          class="block w-60 rounded-lg border border-gray-300 bg-gray-50 ps-10 pt-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+          placeholder="Filter by search"
+          [(ngModel)]="searchText"
+          (ngModelChange)="filterData()"
+        />
+      </div>
+
+      <!-- FILTER BY MOA -->
+      <select
+        id=""
+        class="mb-2 block w-40 rounded-lg border border-gray-300 bg-gray-50 pb-3 ps-3 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+        placeholder="Filter by DSS"
+        [(ngModel)]="moaType"
+        (change)="viewMOA(coorID)"
+      >
+        <option value="" disabled selected>Filter by DSS</option>
+        <option value="1">All</option>
+        <option value="2">Yes</option>
+        <option value="3">No</option>
+        <option value="4">Insufficient information</option>
+      </select>
+    </div>
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
       <table
         class="w-full text-left text-sm text-neutral-800 dark:text-gray-400 rtl:text-right"
@@ -57,8 +94,24 @@
           </tr>
         </thead>
         <tbody>
+          <tr *ngIf="allCompaniesDB.length < 1">
+            <td
+              colspan="6"
+              class="border-b bg-white p-3 text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+            >
+              There are currently no existing companies.
+            </td>
+          </tr>
+          <tr *ngIf="companies.length < 1 && allCompaniesDB.length >= 1">
+            <td
+              colspan="6"
+              class="border-b bg-white p-3 text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
+            >
+              No results.
+            </td>
+          </tr>
           <tr
-            *ngFor="let company of companies; let i = index"
+            *ngFor="let i of getVisibleIndices()"
             class="border-b bg-white text-center hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
           >
             <th
@@ -67,22 +120,13 @@
             >
               <a
                 [routerLink]="'companyDetails/' + companies[i].companyName"
-                class="hover:underline"
+                class="text-blue-600 hover:text-blue-500 hover:underline hover:underline-offset-4"
               >
                 {{ companies[i].companyName }}
               </a>
             </th>
             <td class="px-6 py-4" *ngIf="companies[i].sheetData != null">
-              {{ companies[i].sheetData[6] }}
-            </td>
-            <td
-              class="px-6 py-4 text-gray-500"
-              *ngIf="companies[i].sheetData == null"
-            >
-              No evaluations yet.
-            </td>
-            <td class="px-6 py-4" *ngIf="companies[i].sheetData != null">
-              {{ companies[i].sheetData[10] }}
+              {{ companies[i].sheetData[5] }}
             </td>
             <td
               class="px-6 py-4 text-gray-500"
@@ -92,6 +136,15 @@
             </td>
             <td class="px-6 py-4" *ngIf="companies[i].sheetData != null">
               {{ companies[i].sheetData[12] }}
+            </td>
+            <td
+              class="px-6 py-4 text-gray-500"
+              *ngIf="companies[i].sheetData == null"
+            >
+              No evaluations yet.
+            </td>
+            <td class="px-6 py-4" *ngIf="companies[i].sheetData != null">
+              {{ companies[i].sheetData[25] }}
             </td>
             <td
               class="px-6 py-4 text-gray-500"
@@ -117,6 +170,7 @@
                   companies[i].sheetData != null
                 "
                 class="inline-block rounded bg-emerald-600 px-1.5 py-1"
+                matTooltip="Yes"
               >
                 <ng-icon
                   size="16px"
@@ -130,6 +184,7 @@
                   companies[i].sheetData != null
                 "
                 class="inline-block rounded bg-red-600 px-1.5 py-1"
+                matTooltip="No"
               >
                 <ng-icon
                   size="16px"
@@ -140,6 +195,7 @@
               <div
                 *ngIf="companies[i].sheetData == null"
                 class="inline-block rounded bg-gray-400 px-1.5 py-1"
+                matTooltip="Insufficient information"
               >
                 <ng-icon
                   size="16px"
@@ -151,6 +207,14 @@
           </tr>
         </tbody>
       </table>
+      <mat-paginator
+        [length]="companies.length"
+        [pageSize]="pageSize"
+        [showFirstLastButtons]="true"
+        [pageSizeOptions]="[5, 10, 20, 50]"
+        (page)="paginator.pageIndex = $event.pageIndex"
+      >
+      </mat-paginator>
     </div>
   </div>
 </app-main-template>

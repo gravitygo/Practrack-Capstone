@@ -1,9 +1,65 @@
 <div
+  *ngIf="chatId != ''"
   class="flex h-full flex-col rounded-lg border border-gray-200 bg-white p-4 shadow"
 >
-  <h1 class="text-2xl">
-    {{ chatName }}
-  </h1>
+  <div class="flex justify-between">
+    <div class="flex">
+      <h1 class="text-2xl">
+        {{ chatName }}
+      </h1>
+      <button class="mx-3" *ngIf="isGroup" (click)="toggleModal(1)">
+        <ng-icon
+          name="matInfoOutline"
+          size="24px"
+          class="mr-0 text-blue-500 hover:text-blue-400"
+          matTooltip="View Chat Members"
+        ></ng-icon>
+      </button>
+    </div>
+    <div class="flex">
+      <button
+        class="mx-3 rounded bg-gray-200 px-4 py-2 text-xs font-medium text-gray-500 hover:bg-gray-100"
+        *ngIf="isGroup && (role | async) == 'coordinator'"
+        (click)="addMembers()"
+      >
+        <div class="flex items-center justify-center gap-2">
+          <ng-icon
+            name="matGroupAddOutline"
+            size="20px"
+            class="mr-0 text-gray-500"
+          ></ng-icon>
+          <p>Add Members</p>
+        </div>
+      </button>
+      <button
+        class="rounded bg-blue-500 px-4 py-3 text-xs font-medium text-white hover:bg-blue-400"
+        (click)="setRead()"
+      >
+        <div
+          class="flex items-center justify-center gap-2"
+          *ngIf="isRead == false"
+        >
+          <ng-icon
+            name="matMarkChatReadOutline"
+            size="16px"
+            class="mr-0 text-white"
+          ></ng-icon>
+          <p>Mark as Read</p>
+        </div>
+        <div
+          class="flex items-center justify-center gap-2"
+          *ngIf="isRead == true"
+        >
+          <ng-icon
+            name="matMarkChatUnreadOutline"
+            size="16px"
+            class="mr-0 text-white"
+          ></ng-icon>
+          <p>Mark as Unread</p>
+        </div>
+      </button>
+    </div>
+  </div>
   <hr class="mb-6 mt-2 h-[1px] w-full bg-neutral-300" />
   <div
     #messageViewer
@@ -11,26 +67,50 @@
   >
     <div
       *ngFor="let message of messagesList"
-      class="flex"
+      class="flex p-2"
       [ngClass]="
         message.sender == currentUser ? 'justify-end' : 'justify-start'
       "
     >
-      <p
-        class="max-w-[50%] rounded px-5 py-2"
-        [ngClass]="
-          message.sender == currentUser
-            ? 'rounded-br-none bg-lime-500'
-            : 'rounded-bl-none bg-neutral-200'
-        "
+      <div
+        class="flex w-96 flex-col"
+        [ngClass]="message.sender == currentUser ? 'items-end' : 'items-start'"
       >
-        {{ message.message }}
-      </p>
+        <p
+          class="text-sm font-medium text-gray-700"
+          *ngIf="isGroup && message.sender != currentUser"
+        >
+          {{ message.fullName }}
+        </p>
+        <p
+          class="word-wrap max-w-[100%] rounded-xl px-5 py-2"
+          [ngClass]="
+            message.sender == currentUser
+              ? 'rounded-br-none bg-lime-500'
+              : 'rounded-bl-none bg-neutral-200'
+          "
+        >
+          {{ message.message }}
+        </p>
+        <p class="text-xs italic text-gray-500">
+          {{ message.formattedDateCreated }}
+        </p>
+      </div>
     </div>
   </div>
   <hr class="mb-6 mt-2 h-[1px] w-full bg-neutral-300" />
-  <div class="grow">
-    <form [formGroup]="chat" (submit)="submitMessage()">
+  <div
+    class="flex w-full justify-center italic text-gray-600"
+    *ngIf="!isActive"
+  >
+    You can no longer send messages to this chat room, as it has been closed.
+  </div>
+  <div class="grow" *ngIf="isActive">
+    <form
+      [formGroup]="chat"
+      (submit)="submitMessage()"
+      (keydown.enter)="submitMessage()"
+    >
       <label for="chat" class="sr-only">Your message</label>
       <div class="flex items-center">
         <textarea
@@ -61,3 +141,16 @@
     </form>
   </div>
 </div>
+
+<app-modal
+  *ngIf="idNum === 1"
+  [isOpen]="isModalOpen"
+  (eventToggleModal)="toggleModal(1, $event)"
+  [hasHeader]="true"
+  headerName="Chat Members"
+>
+  <div *ngFor="let member of members">
+    <p>{{ member }}</p>
+    <hr class="mb-3 mt-3 h-[1px] w-full bg-neutral-300" />
+  </div>
+</app-modal>

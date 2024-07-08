@@ -1,10 +1,10 @@
 <app-main-template>
   <div class="flex w-full justify-between">
-    <h1 class="text-3xl">Account</h1>
+    <h1 class="text-3xl">Settings</h1>
   </div>
   <hr class="mb-6 mt-2 h-[2px] w-full bg-neutral-300" />
 
-  <!-- WARNING: <1 COORDINATOR -->
+  <!-- WARNING: >1 COORDINATOR -->
   <div
     class="ml-2 w-full rounded-lg border border-gray-200 bg-red-100 p-4 shadow"
     *ngIf="(role | async) == 'coordinator' && toggleTurnover"
@@ -180,7 +180,7 @@
         *ngIf="(role | async) == 'student'"
       >
         <div class="flex place-content-end gap-3 p-4">
-          <app-title-icon iconName="matPsychologyOutline"></app-title-icon>
+          <app-title-icon iconName="matWorkOutlineOutline"></app-title-icon>
           <h1 class="grow text-xl font-semibold">Deployment Details</h1>
         </div>
         <hr class="mb-4 h-[2px] w-full bg-neutral-300" />
@@ -271,7 +271,7 @@
             id=""
             class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
             formControlName="accJobPosition"
-            placeholder="Select preferred work setup"
+            placeholder="Select preferred job position"
           >
             <option value="" disabled selected>
               Select preferred job position
@@ -280,6 +280,38 @@
               {{ type.jobTitle }}
             </option>
           </select>
+        </div>
+        <div class="mb-3 ml-6 mr-6 flex justify-between">
+          <div class="flex w-2/5 items-start">
+            <h3 class="self-center text-base font-medium">
+              Preferred Allowance Type
+            </h3>
+            <span
+              class="text-warning-500 text-[10px] font-medium text-red-600 dark:text-red-500"
+              [ngStyle]="{
+                display:
+                  accountForm.get('accAllowance')!.invalid && submitted
+                    ? 'block'
+                    : 'none'
+              }"
+              >Please select your preferred allowance type.</span
+            >
+          </div>
+          <div class="flex w-3/5 items-start justify-start">
+            <select
+              id=""
+              class="block w-[60%] rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+              formControlName="accAllowance"
+              placeholder="Select preferred allowance type"
+            >
+              <option value="" disabled selected>
+                Select preferred allowance type
+              </option>
+              <option value="1">Paid</option>
+              <option value="2">Voluntary</option>
+              <option value="3">Any</option>
+            </select>
+          </div>
         </div>
         <div class="mb-3 ml-6 mr-6 flex place-items-center">
           <h3 class="grow text-base font-medium">Start Date</h3>
@@ -303,6 +335,22 @@
             type="text"
             class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
             formControlName="accCompany"
+          />
+        </div>
+        <div class="mb-3 ml-6 mr-6 flex place-items-center">
+          <h3 class="grow text-base font-medium">Supervisor Name</h3>
+          <input
+            type="text"
+            class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+            formControlName="accSupvName"
+          />
+        </div>
+        <div class="mb-3 ml-6 mr-6 flex place-items-center">
+          <h3 class="grow text-base font-medium">Supervisor Email</h3>
+          <input
+            type="email"
+            class="border-[1px]rounded-md w-[60%] rounded border border-gray-300 bg-gray-50 px-3 py-1 text-sm dark:border-neutral-600"
+            formControlName="accSupvEmail"
           />
         </div>
       </div>

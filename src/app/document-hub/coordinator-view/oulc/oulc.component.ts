@@ -8,6 +8,7 @@ import { DeploymentStage, RemarksStatus } from 'src/typings';
 import { KeyValue } from '../../../model/manifest.model';
 import { ManifestService } from '../../../services/manifest.service';
 import { LoadingService } from '../../../services/loading.service';
+import { SupabaseService } from '../../../services/supabase.service';
 import { DocumentService } from '../../../services/document.service';
 import { FormArray, FormBuilder, Validators } from '@angular/forms';
 import { AccountService } from '../../../services/account.service';
@@ -28,7 +29,15 @@ export class OulcComponent {
   oulcStatuses: KeyValue[] = [];
   currentDocument?: number = 0;
 
-  feedback: string = 'a feedback';
+  // SEARCH FILTER FUNCTION
+  searchText: any;
+  filteredOulc: {
+    documentID: number;
+    documentName: string;
+    student: string;
+    dateReceived: string;
+    remarks: RemarksStatus;
+  }[] = [];
 
   document: {
     documentName: string;
@@ -61,6 +70,7 @@ export class OulcComponent {
 
   constructor(
     private loadingService: LoadingService,
+    private supabaseService: SupabaseService,
     private manifestService: ManifestService,
     private documentService: DocumentService,
     private fb: FormBuilder
@@ -70,13 +80,43 @@ export class OulcComponent {
     this.manifestService.getOptions('status').subscribe((statuses) => {
       this.oulcStatuses = statuses;
     });
-    this.documentService.getSubmittedDocuments().subscribe((documents) => {
+
+    this.documentService.getOULCDocument().subscribe((documents) => {
       this.oulc = documents;
+      this.filteredOulc = this.oulc.slice();
+      this.filterData();
       this.loadingService.hideLoading();
+    });
+
+    // LISTENER
+    this.supabaseService.getDocuHub().subscribe(() => {
+      this.documentService.getOULCDocument().subscribe((documents) => {
+        this.oulc = documents;
+        this.filteredOulc = this.oulc.slice();
+        this.filterData();
+      });
     });
   }
 
   ngOnInit() {}
+
+  // SEARCH Filter function
+  filterData(): void {
+    const searchKeys = ['documentName', 'student', 'dateReceived', 'remarks'];
+    if (!this.searchText) {
+      this.filteredOulc = this.oulc.slice();
+    } else {
+      this.filteredOulc = this.oulc.filter((doc: any) =>
+        searchKeys.some(
+          (key) =>
+            doc[key]
+              ?.toString()
+              .toLowerCase()
+              .includes(this.searchText.toLowerCase())
+        )
+      );
+    }
+  }
 
   setCurrentDocument(currentDocumentID: number) {
     this.loadingService.showLoading();
@@ -85,6 +125,7 @@ export class OulcComponent {
       .subscribe((values) => {
         this.currentDocument = currentDocumentID;
         this.document = values[0];
+        if (this.document.feedback == null) this.document.feedback = '';
         this.oulcDocument = this.fb.group({
           status: { value: `${this.document.fileStatus}`, disabled: false },
           feedback: { value: `${this.document.feedback}`, disabled: false },
@@ -103,13 +144,11 @@ export class OulcComponent {
           parseInt(this.oulcDocument.value!.status!)
         )
         .subscribe(() => {
-          this.documentService
-            .getSubmittedDocuments()
-            .subscribe((documents) => {
-              this.oulc = documents;
-              this.loadingService.hideLoading();
-              this.toggleModal(3);
-            });
+          this.documentService.getOULCDocument().subscribe((documents) => {
+            this.oulc = documents;
+            this.loadingService.hideLoading();
+            this.toggleModal(3);
+          });
         });
     }
   }

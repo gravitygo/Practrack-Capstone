@@ -91,10 +91,10 @@ export class SignupComponent {
         })
         .catch((err) => {
           this.failed = true;
-          console.log('Error: ', err);
+          console.error(err);
         })
         .finally(() => this.loadingService.hideLoading());
     }
-    console.log('Form submitted:', this.loginForm.value);
+    console.log('Form submitted');
   }
 }

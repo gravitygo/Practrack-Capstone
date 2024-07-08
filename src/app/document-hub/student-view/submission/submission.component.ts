@@ -12,6 +12,8 @@ import {
 } from '@angular/fire/storage';
 import { LoadingService } from 'src/app/services/loading.service';
 import { DocumentService } from 'src/app/services/document.service';
+import { SnackbarService } from 'src/app/services/snackbar.service';
+
 @Component({
   selector: 'app-submission',
   templateUrl: './submission.component.html',
@@ -34,7 +36,8 @@ export class SubmissionComponent {
     private manifestService: ManifestService,
     private pdfViewer: NgxExtendedPdfViewerService,
     private loadingService: LoadingService,
-    private documentService: DocumentService
+    private documentService: DocumentService,
+    private snack: SnackbarService
   ) {
     this.loadingService.showLoading();
     this.manifestService
@@ -64,18 +67,17 @@ export class SubmissionComponent {
   async retrieveFile() {
     const storageRef = ref(
       this.storage,
-      `${this.baseUrl}/initFile/${this.id}.pdf`
+      `${this.baseUrl}/initFile/${this.atfl}.pdf`
     );
     getDownloadURL(storageRef).then((val) => {
       this.pdfSrc = val;
     });
   }
-  // TODO: Implement insert in db and have a file category on firestorage. Have initial file to download in the db. and load it in the page already.
+
   async uploadFile() {
     this.loadingService.showLoading();
     const pdfBlob: Blob = await this.pdfViewer.getCurrentDocumentAsBlob();
     if (!pdfBlob.size) return;
-    console.log(pdfBlob);
 
     this.documentService
       .submitDocuments(`${this.id}.pdf`, parseInt(this.atfl!))
@@ -89,6 +91,11 @@ export class SubmissionComponent {
           this.router.navigate([`/documentHub/resubmit/${value}`]);
           this.loadingService.hideLoading();
         });
+        this.snack.openSnackBar(
+          'Requirement has been submitted successfully.',
+          '',
+          'Success'
+        );
       });
   }
 }

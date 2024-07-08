@@ -12,7 +12,5 @@ export class MoaErrorComponent {
   ngOnInit() {
     const currentState = this.router.lastSuccessfulNavigation;
     this.consistencyRatio = currentState?.extras?.state?.['cr'];
-
-    console.log(this.consistencyRatio);
   }
 }
